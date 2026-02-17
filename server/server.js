@@ -1,8 +1,33 @@
-const app = require('./src/app')
-require('dotenv').config()
+const express = require("express");
 
-const PORT = process.env.PORT || 5000
+const dotenv = require("dotenv");
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`)
-})
+const connectDB = require("./config/db");
+
+const authRoutes = require("./routes/authRoutes");
+
+// const txRoutes = require("./routes/transactionRoutes");
+
+// const credRoutes = require("./routes/creditRoutes");
+
+// const cmpRoutes = require("./routes/companyRoutes");
+
+dotenv.config();
+
+connectDB();
+
+const app = express();
+
+app.use(express.json());
+
+app.use("/auth", authRoutes);
+
+// app.use("/transactions", txRoutes);
+
+// app.use("/credit", credRoutes)
+
+// app.use("/company", cmpRoutes)
+
+app.listen(5000, () =>
+  console.log("Server running")
+);
