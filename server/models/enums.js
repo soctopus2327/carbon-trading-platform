@@ -1,0 +1,51 @@
+const COMPANY_TYPE = {
+
+    INDIVIDUAL: "INDIVIDUAL",
+    COMPANY: "COMPANY",
+    ALLIANCE: "ALLIANCE"
+
+};
+
+const COMPANY_STATUS = {
+
+    PENDING: "PENDING",
+    ACTIVE: "ACTIVE",
+    BLOCKED: "BLOCKED",
+    MERGED: "MERGED"
+
+};
+
+const USER_ROLE = {
+
+    ADMIN: "ADMIN",
+    TRADER: "TRADER",
+    AUDITOR: "AUDITOR",
+    VIEWER: "VIEWER"
+
+};
+
+const LISTING_STATUS = {
+
+    ACTIVE: "ACTIVE",
+    CLOSED: "CLOSED",
+    CANCELLED: "CANCELLED"
+
+};
+
+const PAYMENT_STATUS = {
+
+    PENDING: "PENDING",
+    SUCCESS: "SUCCESS",
+    FAILED: "FAILED"
+
+};
+
+module.exports = {
+
+    COMPANY_TYPE,
+    COMPANY_STATUS,
+    USER_ROLE,
+    LISTING_STATUS,
+    PAYMENT_STATUS
+
+};
