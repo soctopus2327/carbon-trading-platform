@@ -6,12 +6,10 @@ import { dashboardStats } from "../data/dashboard.mock";
 
 export default function Dashboard() {
   return (
-    <PageLayout>
-      <h1 className="text-2xl font-semibold">Dashboard</h1>
-      <p className="text-gray-500 mb-6">
-        Overview of your sustainability performance
-      </p>
-
+    <PageLayout
+      title="Dashboard"
+      description="Overview of your carbon portfolio"
+    >
       {/* Stat Cards */}
       <div className="grid grid-cols-4 gap-6 mb-6">
         {dashboardStats.map((stat) => (
