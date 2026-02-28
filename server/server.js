@@ -10,7 +10,7 @@ const authRoutes = require("./routes/authRoutes");
 
 // const credRoutes = require("./routes/creditRoutes");
 
-// const cmpRoutes = require("./routes/companyRoutes");
+const cmpRoutes = require("./routes/companyRoutes");
 
 dotenv.config();
 
@@ -26,7 +26,7 @@ app.use("/auth", authRoutes);
 
 // app.use("/credit", credRoutes)
 
-// app.use("/company", cmpRoutes)
+app.use("/company", cmpRoutes)
 
 app.listen(5000, () =>
   console.log("Server running")

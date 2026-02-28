@@ -3,9 +3,6 @@ const Company = require("../models/Company");
 const bcrypt = require("bcryptjs");
 const generateToken = require("../utils/generateToken");
 
-
-// REGISTER COMPANY + ADMIN
-
 exports.registerCompany = async (req, res) => {
 
  try {
@@ -50,10 +47,6 @@ exports.registerCompany = async (req, res) => {
  }
 
 };
-
-
-
-// LOGIN
 
 exports.login = async (req, res) => {
 
