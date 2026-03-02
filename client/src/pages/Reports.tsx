@@ -1,31 +1,31 @@
 import PageLayout from "../components/layout/PageLayout";
 
-export default function Reports() {
+export default function Reports({ onLogout }) {
 
   return (
 
     <PageLayout
       title="Reports"
-      description=""
+      description="View compliance and audit reports"
     >
 
-      <div className="bg-white border rounded-xl h-[400px] flex items-center justify-center">
+      <div className="bg-white border border-gray-100 rounded-xl h-[500px] flex items-center justify-center shadow-md">
 
         <div className="text-center">
 
 
           {/* Icon */}
 
-          <div className="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <div className="w-20 h-20 bg-gradient-to-br from-green-100 to-green-200 rounded-full flex items-center justify-center mx-auto mb-6">
 
-            📊
+            �
 
           </div>
 
 
           {/* Title */}
 
-          <h2 className="font-semibold text-lg mb-2">
+          <h2 className="font-bold text-2xl mb-3 text-gray-900">
 
             Detailed Reports
 
@@ -34,10 +34,11 @@ export default function Reports() {
 
           {/* Description */}
 
-          <p className="text-gray-500 max-w-md">
+          <p className="text-gray-600 max-w-md text-lg">
 
             Compliance and audit reports are generated monthly.
-            Check back on the 1st of next month.
+            <br />
+            <span className="font-semibold text-green-600">Check back on the 1st of next month.</span>
 
           </p>
 

@@ -21,8 +21,8 @@ export default function Topbar() {
         </select>
 
         {/* Icons (placeholders) */}
-        <button className="text-gray-500">🌙</button>
-        <button className="text-gray-500">🔔</button>
+        <button className="text-gray-500">Mode</button>
+        <button className="text-gray-500">Bell</button>
 
         {/* Profile */}
         <div className="flex items-center gap-2">
