@@ -4,25 +4,30 @@ import EmissionsChart from "../components/dashboard/EmissionsChart";
 import PortfolioDistribution from "../components/dashboard/PortfolioDistribution";
 import { dashboardStats } from "../data/dashboard.mock";
 
-export default function Dashboard() {
+export default function Dashboard({ onLogout }) {
   return (
     <PageLayout
       title="Dashboard"
-      description="Overview of your carbon portfolio"
+      description="Overview of your carbon portfolio and trading activity"
     >
-      {/* Stat Cards */}
-      <div className="grid grid-cols-4 gap-6 mb-6">
+      {/* Stats Section */}
+      <div className="grid xl:grid-cols-4 md:grid-cols-2 grid-cols-1 gap-8 mb-12">
         {dashboardStats.map((stat) => (
           <StatCard key={stat.title} {...stat} />
         ))}
       </div>
 
-      {/* Charts */}
-      <div className="grid grid-cols-3 gap-6">
-        <div className="col-span-2">
+      {/* Charts Section */}
+      <div className="grid lg:grid-cols-3 grid-cols-1 gap-12">
+        
+        <div className="lg:col-span-2">
           <EmissionsChart />
         </div>
-        <PortfolioDistribution />
+
+        <div>
+          <PortfolioDistribution />
+        </div>
+
       </div>
     </PageLayout>
   );

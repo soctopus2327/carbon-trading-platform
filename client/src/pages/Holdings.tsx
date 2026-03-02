@@ -1,6 +1,6 @@
 import PageLayout from "../components/layout/PageLayout";
 
-export default function Holdings() {
+export default function Holdings({ onLogout }) {
 
   const portfolio = [
     {
@@ -57,18 +57,18 @@ export default function Holdings() {
 
       {/* Portfolio Card */}
 
-      <div className="bg-white rounded-xl shadow mb-6">
+      <div className="bg-white rounded-xl shadow-md border border-gray-100 mb-8">
 
 
-        <div className="flex justify-between p-6 border-b">
+        <div className="flex justify-between p-6 border-b border-gray-100">
 
           <div>
 
-            <h2 className="font-semibold text-lg">
+            <h2 className="font-bold text-2xl text-gray-900">
               Portfolio
             </h2>
 
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-gray-600 mt-1">
               4 active projects
             </p>
 
@@ -77,11 +77,11 @@ export default function Holdings() {
 
           <div className="text-right">
 
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-gray-600 font-semibold">
               TOTAL VALUE
             </p>
 
-            <p className="text-xl font-bold">
+            <p className="text-3xl font-bold text-green-600">
               $118,750.00
             </p>
 
@@ -93,35 +93,35 @@ export default function Holdings() {
 
         <table className="w-full text-sm">
 
-          <thead className="text-gray-500">
+          <thead className="text-gray-700 bg-gray-50 border-b-2 border-gray-200">
 
-            <tr className="border-b">
+            <tr>
 
-              <th className="text-left p-4">PROJECT NAME</th>
-              <th className="text-left">TYPE</th>
-              <th>VOLUME</th>
-              <th>AVG COST</th>
-              <th>VALUE</th>
-              <th>ACTIONS</th>
+              <th className="text-left p-4 font-bold">PROJECT NAME</th>
+              <th className="text-left font-bold">TYPE</th>
+              <th className="text-center font-bold">VOLUME</th>
+              <th className="text-center font-bold">AVG COST</th>
+              <th className="text-center font-bold">VALUE</th>
+              <th className="text-center font-bold">ACTIONS</th>
 
             </tr>
 
           </thead>
 
 
-          <tbody>
+          <tbody className="divide-y divide-gray-200">
 
             {portfolio.map((item, i) => (
 
-              <tr key={i} className="border-b">
+              <tr key={i} className="hover:bg-green-50 transition">
 
                 <td className="p-4">
 
-                  <div className="font-medium">
+                  <div className="font-semibold text-gray-900">
                     {item.name}
                   </div>
 
-                  <div className="text-green-600 text-xs">
+                  <div className="text-green-600 text-xs font-medium mt-1">
                     {item.change}
                   </div>
 
@@ -130,7 +130,7 @@ export default function Holdings() {
 
                 <td>
 
-                  <span className="bg-gray-100 px-3 py-1 rounded-full text-xs">
+                  <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs font-medium">
 
                     {item.type}
 
@@ -139,23 +139,24 @@ export default function Holdings() {
                 </td>
 
 
-                <td className="text-center">
+                <td className="text-center text-gray-700">
                   {item.volume}
                 </td>
 
 
-                <td className="text-center">
+                <td className="text-center text-gray-700">
                   {item.avgCost}
                 </td>
 
 
-                <td className="text-center font-semibold">
+                <td className="text-center font-bold text-green-600">
                   {item.value}
                 </td>
 
 
-                <td className="text-center">
-                  🗑️ ⬇️
+                <td className="text-center space-x-2">
+                  <button className="hover:text-red-600 transition text-lg">Remove</button>
+                  <button className="hover:text-blue-600 transition text-lg">Download</button>
                 </td>
 
               </tr>
@@ -173,17 +174,17 @@ export default function Holdings() {
       {/* Transactions */}
 
 
-      <div className="bg-white rounded-xl shadow">
+      <div className="bg-white rounded-xl shadow-md border border-gray-100 mt-8">
 
 
-        <div className="flex justify-between p-6 border-b">
+        <div className="flex justify-between p-6 border-b border-gray-100">
 
-          <h2 className="font-semibold">
+          <h2 className="font-bold text-lg text-gray-900">
             Recent Transactions
           </h2>
 
-          <button className="text-green-600 text-sm">
-            View All
+          <button className="text-green-600 font-semibold hover:text-green-700 text-sm transition">
+            View All →
           </button>
 
         </div>
@@ -193,19 +194,19 @@ export default function Holdings() {
         <table className="w-full text-sm">
 
 
-          <thead className="text-gray-500">
+          <thead className="text-gray-700 bg-gray-50 border-b-2 border-gray-200">
 
-            <tr className="border-b">
+            <tr>
 
-              <th className="p-4 text-left">DATE & ID</th>
+              <th className="p-4 text-left font-bold">DATE & ID</th>
 
-              <th>STATUS</th>
+              <th className="font-bold">STATUS</th>
 
-              <th>PROJECT</th>
+              <th className="font-bold">PROJECT</th>
 
-              <th>AMOUNT</th>
+              <th className="text-center font-bold">AMOUNT</th>
 
-              <th>CONTEXT</th>
+              <th className="text-center font-bold">ACTION</th>
 
             </tr>
 
@@ -213,43 +214,41 @@ export default function Holdings() {
 
 
 
-          <tbody>
+          <tbody className="divide-y divide-gray-200">
 
             {transactions.map((tx, i) => (
 
-              <tr key={i} className="border-b">
+              <tr key={i} className="hover:bg-green-50 transition">
 
-                <td className="p-4">
+                <td className="p-4 font-medium text-gray-900">
                   {tx.date}
                 </td>
 
 
-                <td className={`
-                  ${tx.status === "Completed"
+                <td className={`font-semibold ${
+                  tx.status === "Completed"
                       ? "text-green-600"
-                      : "text-yellow-600"}
-                `}>
+                      : "text-yellow-600"}`}>
 
                   {tx.status}
 
                 </td>
 
 
-                <td>
+                <td className="text-gray-700">
                   {tx.project}
                 </td>
 
 
-                <td className="text-center">
+                <td className="text-center font-semibold text-gray-900">
                   {tx.amount}
                 </td>
 
 
-                <td className={`
-                  ${tx.action === "Buy"
+                <td className={`text-center font-bold ${
+                  tx.action === "Buy"
                       ? "text-green-600"
-                      : "text-orange-500"}
-                `}>
+                      : tx.action === "Retire" ? "text-blue-600" : "text-orange-600"}`}>
 
                   {tx.action}
 

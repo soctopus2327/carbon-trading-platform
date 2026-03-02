@@ -5,12 +5,14 @@ export default function PageLayout({
   title,
   description,
   children,
+  onLogout,
 
 }: {
 
   title: string;
   description?: string;
   children: React.ReactNode;
+  onLogout?: () => void;
 
 }) {
 
@@ -21,16 +23,16 @@ export default function PageLayout({
 
       {/* Global Header */}
 
-      <Header />
+      <Header onLogout={onLogout} />
 
 
       {/* Page Heading */}
 
-      <div className="px-6 py-6 flex justify-between items-center">
+      <div className="px-6 py-8 flex justify-between items-center border-b border-gray-200 bg-white">
 
         <div>
 
-          <h1 className="text-2xl font-semibold">
+          <h1 className="text-3xl font-bold text-gray-900">
 
             {title}
 
@@ -38,7 +40,7 @@ export default function PageLayout({
 
           {description && (
 
-            <p className="text-gray-500 text-sm mt-1">
+            <p className="text-gray-600 text-sm mt-2">
 
               {description}
 
@@ -49,7 +51,7 @@ export default function PageLayout({
         </div>
 
 
-        <button className="bg-purple-600 text-white px-5 py-2 rounded-lg shadow">
+        <button className="bg-gradient-to-r from-green-500 to-green-600 text-white px-6 py-2 rounded-lg shadow-md hover:shadow-lg hover:from-green-600 hover:to-green-700 transition font-semibold">
 
           Alliance Funds
 
@@ -60,7 +62,7 @@ export default function PageLayout({
 
       {/* Page Content */}
 
-      <div className="px-6 pb-6">
+      <div className="px-6 py-8">
 
         {children}
 
