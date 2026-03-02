@@ -2,9 +2,9 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import PageLayout from "../components/layout/PageLayout";
 
-interface MarketplaceProps {}
+interface MarketplaceProps { }
 
-export default function Marketplace({}: MarketplaceProps) {
+export default function Marketplace({ }: MarketplaceProps) {
 
   const [activeTab, setActiveTab] = useState("buy");
   const [trades, setTrades] = useState([]);
@@ -22,6 +22,10 @@ export default function Marketplace({}: MarketplaceProps) {
   });
 
   const user = JSON.parse(localStorage.getItem("user") || "{}");
+
+  const [buyingTrade, setBuyingTrade] = useState<any>(null);
+  const [buyQuantity, setBuyQuantity] = useState("");
+
 
   useEffect(() => {
     fetchTrades();
@@ -57,7 +61,7 @@ export default function Marketplace({}: MarketplaceProps) {
 
     try {
       const token = localStorage.getItem("token");
-      
+
       const response = await axios.post("http://localhost:5000/trade", {
         pricePerCredit: Number(form.pricePerCredit),
         quantity: Number(form.quantity)
@@ -82,13 +86,13 @@ export default function Marketplace({}: MarketplaceProps) {
   const deleteTrade = async (id) => {
     try {
       const token = localStorage.getItem("token");
-      
+
       await axios.delete(`http://localhost:5000/trade/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
       });
-      
+
       alert("Trade deleted successfully!");
       fetchTrades();
     } catch (err) {
@@ -151,22 +155,20 @@ export default function Marketplace({}: MarketplaceProps) {
         <div className="flex gap-3">
           <button
             onClick={() => setActiveTab("buy")}
-            className={`px-6 py-3 rounded-lg font-semibold transition ${
-              activeTab === "buy"
+            className={`px-6 py-3 rounded-lg font-semibold transition ${activeTab === "buy"
                 ? "bg-green-600 text-white shadow-lg"
                 : "bg-white text-gray-700 border-2 border-gray-200 hover:border-green-300"
-            }`}
+              }`}
           >
             Buy Credits
           </button>
 
           <button
             onClick={() => setActiveTab("sell")}
-            className={`px-6 py-3 rounded-lg font-semibold transition ${
-              activeTab === "sell"
+            className={`px-6 py-3 rounded-lg font-semibold transition ${activeTab === "sell"
                 ? "bg-green-600 text-white shadow-lg"
                 : "bg-white text-gray-700 border-2 border-gray-200 hover:border-green-300"
-            }`}
+              }`}
           >
             Sell Credits
           </button>
@@ -198,14 +200,21 @@ export default function Marketplace({}: MarketplaceProps) {
                     </h3>
 
                     <p className="text-2xl font-bold text-green-600 mb-1">
-                      ₹{trade.pricePerCredit}
+                      ₹{trade.pricePerCredit}/credit
                     </p>
 
                     <p className="text-gray-600 mb-4">
-                      {trade.quantity} credits available
+                      {/* {trade.quantity} credits available */}
+                      {trade.remainingQuantity ?? trade.quantity} credits available
                     </p>
 
-                    <button className="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition font-semibold">
+                    {/* <button className="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition font-semibold">
+                      Buy Credits
+                    </button> */}
+                    <button
+                      onClick={() => setBuyingTrade(trade)}
+                      className="w-full bg-green-600 text-white py-2 rounded-lg"
+                    >
                       Buy Credits
                     </button>
                   </div>
@@ -323,7 +332,7 @@ export default function Marketplace({}: MarketplaceProps) {
                       ) : (
                         <>
                           <h3 className="text-2xl font-bold text-green-600 mb-1">
-                            ₹{trade.pricePerCredit}
+                            ₹{trade.pricePerCredit}/credit
                           </h3>
 
                           <p className="text-gray-600 mb-4">
@@ -355,6 +364,73 @@ export default function Marketplace({}: MarketplaceProps) {
         )}
 
       </div>
+
+
+       {/* BUY MODAL */}
+      {buyingTrade && (
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center">
+          <div className="bg-white p-6 rounded-lg w-96">
+            <h2 className="text-lg font-bold mb-4">
+              Buy from {buyingTrade.sellerCompany?.name}
+            </h2>
+
+            <input
+              type="number"
+              placeholder="Enter quantity"
+              value={buyQuantity}
+              onChange={(e) => setBuyQuantity(e.target.value)}
+              className="w-full border p-2 rounded mb-4"
+            />
+
+            <div className="flex gap-2">
+              <button
+                onClick={async () => {
+                  try {
+                    const token = localStorage.getItem("token");
+
+                    await axios.post(
+                      "http://localhost:5000/transactions/execute",
+                      {
+                        tradeId: buyingTrade._id,
+                        quantity: Number(buyQuantity)
+                      },
+                      {
+                        headers: {
+                          Authorization: `Bearer ${token}`
+                        }
+                      }
+                    );
+
+                    alert("Purchase successful!");
+                    setBuyingTrade(null);
+                    setBuyQuantity("");
+                    fetchTrades();
+
+                  }catch (err: any) {
+  const errorMessage =
+    err.response?.data?.message ||
+    err.response?.data?.error ||
+    "Transaction failed";
+
+  alert(errorMessage);
+}
+                }}
+                className="flex-1 bg-green-600 text-white py-2 rounded"
+              >
+                Confirm
+              </button>
+
+              <button
+                onClick={() => setBuyingTrade(null)}
+                className="flex-1 bg-gray-400 text-white py-2 rounded"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </PageLayout>
   );
 }

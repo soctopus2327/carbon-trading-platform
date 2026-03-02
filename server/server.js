@@ -6,7 +6,7 @@ const connectDB = require("./config/db");
 
 const authRoutes = require("./routes/authRoutes");
 
-// const txRoutes = require("./routes/transactionRoutes");
+const txRoutes = require("./routes/transactionRoutes");
 
 // const credRoutes = require("./routes/creditRoutes");
 
@@ -27,7 +27,7 @@ app.use(express.json());
 app.use("/auth", authRoutes);
 app.use("/trade", tradeRoutes);
 
-// app.use("/transactions", txRoutes);
+app.use("/transactions", txRoutes);
 
 // app.use("/credit", credRoutes)
 

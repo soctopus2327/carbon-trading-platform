@@ -25,9 +25,9 @@ exports.createTrade = async (req, res) => {
 exports.getAllTrades = async (req, res) => {
   try {
 
-    const trades = await TradeListing
-      .find()
-      .populate("sellerCompany");
+    const trades = await TradeListing.find({
+  remainingQuantity: { $gt: 0 }
+}).populate("sellerCompany");
 
     res.json(trades);
 
