@@ -2,19 +2,26 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import PageLayout from "../components/layout/PageLayout";
 
-export default function Marketplace({ onLogout }) {
+interface MarketplaceProps {}
+
+export default function Marketplace({}: MarketplaceProps) {
 
   const [activeTab, setActiveTab] = useState("buy");
   const [trades, setTrades] = useState([]);
   const [myTrades, setMyTrades] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [editingId, setEditingId] = useState(null);
+  const [editForm, setEditForm] = useState({
+    pricePerCredit: "",
+    quantity: ""
+  });
 
   const [form, setForm] = useState({
     pricePerCredit: "",
     quantity: ""
   });
 
-  const user = JSON.parse(localStorage.getItem("user"));
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
 
   useEffect(() => {
     fetchTrades();
@@ -90,6 +97,48 @@ export default function Marketplace({ onLogout }) {
     }
   };
 
+  const startEdit = (trade) => {
+    setEditingId(trade._id);
+    console.log("Editing trade:", trade);
+    setEditForm({
+      pricePerCredit: trade.pricePerCredit.toString(),
+      quantity: trade.quantity.toString()
+    });
+  };
+
+  const updateTrade = async (e) => {
+    e.preventDefault();
+
+    if (!editingId) return;
+
+    try {
+      const token = localStorage.getItem("token");
+      console.log("Updating trade with ID:", editingId, "Data:", editForm);
+      const response = await axios.put(
+        `http://localhost:5000/trade/${editingId}`,
+        {
+          pricePerCredit: Number(editForm.pricePerCredit),
+          quantity: Number(editForm.quantity)
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+      );
+
+      if (response.data) {
+        alert("Trade updated successfully!");
+        setEditingId(null);
+        setEditForm({ pricePerCredit: "", quantity: "" });
+        fetchTrades();
+      }
+    } catch (err) {
+      console.error("Error updating trade", err);
+      alert(err.response?.data?.error || "Failed to update trade");
+    }
+  };
+
   return (
     <PageLayout
       title="Marketplace"
@@ -153,7 +202,7 @@ export default function Marketplace({ onLogout }) {
                     </p>
 
                     <p className="text-gray-600 mb-4">
-                      {trade.remainingQuantity || trade.quantity} credits available
+                      {trade.quantity} credits available
                     </p>
 
                     <button className="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition font-semibold">
@@ -233,20 +282,70 @@ export default function Marketplace({ onLogout }) {
                       key={trade._id}
                       className="bg-white p-6 rounded-xl shadow-md border border-gray-100 hover:shadow-lg transition"
                     >
-                      <h3 className="text-2xl font-bold text-green-600 mb-1">
-                        ₹{trade.pricePerCredit}
-                      </h3>
+                      {editingId === trade._id ? (
+                        <form onSubmit={updateTrade} className="space-y-4">
+                          <div>
+                            <label className="text-sm font-semibold text-gray-700">Price Per Credit</label>
+                            <input
+                              type="number"
+                              value={editForm.pricePerCredit}
+                              onChange={(e) => setEditForm({ ...editForm, pricePerCredit: e.target.value })}
+                              className="w-full border-2 border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:border-green-500"
+                              required
+                            />
+                          </div>
+                          <div>
+                            <label className="text-sm font-semibold text-gray-700">Quantity</label>
+                            <input
+                              type="number"
+                              value={editForm.quantity}
+                              onChange={(e) => setEditForm({ ...editForm, quantity: e.target.value })}
+                              className="w-full border-2 border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:border-green-500"
+                              required
+                            />
+                          </div>
+                          <div className="flex gap-2">
+                            <button
+                              type="submit"
+                              className="flex-1 bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition font-semibold text-sm"
+                            >
+                              Save
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setEditingId(null)}
+                              className="flex-1 bg-gray-400 text-white py-2 rounded-lg hover:bg-gray-500 transition font-semibold text-sm"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </form>
+                      ) : (
+                        <>
+                          <h3 className="text-2xl font-bold text-green-600 mb-1">
+                            ₹{trade.pricePerCredit}
+                          </h3>
 
-                      <p className="text-gray-600 mb-4">
-                        {trade.remainingQuantity || trade.quantity} credits available
-                      </p>
+                          <p className="text-gray-600 mb-4">
+                            {trade.remainingQuantity || trade.quantity} credits available
+                          </p>
 
-                      <button
-                        onClick={() => deleteTrade(trade._id)}
-                        className="w-full bg-red-600 text-white py-2 rounded-lg hover:bg-red-700 transition font-semibold"
-                      >
-                        Delete
-                      </button>
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => startEdit(trade)}
+                              className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition font-semibold text-sm"
+                            >
+                              Edit
+                            </button>
+                            <button
+                              onClick={() => deleteTrade(trade._id)}
+                              className="flex-1 bg-red-600 text-white py-2 rounded-lg hover:bg-red-700 transition font-semibold text-sm"
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        </>
+                      )}
                     </div>
                   ))}
                 </div>
