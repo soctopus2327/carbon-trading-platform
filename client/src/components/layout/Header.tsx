@@ -1,8 +1,16 @@
 import { useState } from "react";
 
-export default function Header({ }) {
+export default function Header({ onLogout }) {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const user = JSON.parse(localStorage.getItem("user") || "{}");
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    if (onLogout) {
+      onLogout();
+    }
+  };
 
   return (
     <div className="flex items-center justify-between px-6 py-4 bg-white border-b border-gray-200">
