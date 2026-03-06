@@ -25,7 +25,7 @@ export default function Sidebar({ setPage, page, onLogout }: SidebarProps) {
   };
 
   return (
-    <aside className="w-64 bg-gradient-to-b from-green-600 to-green-700 text-white border-r border-green-800 flex flex-col justify-between h-screen">
+    <aside className="w-64 bg-gradient-to-b from-green-600 to-green-700 text-white border-r border-green-800 flex flex-col justify-between h-screen shrink-0">
       
       {/* Top Section */}
       <div>
@@ -62,6 +62,12 @@ export default function Sidebar({ setPage, page, onLogout }: SidebarProps) {
             label="Reports"
             active={page === "reports"}
             onClick={() => setPage("reports")}
+          />
+
+          <NavItem
+            label="News"
+            active={page === "news"}
+            onClick={() => setPage("news")}
           />
 
           <NavItem

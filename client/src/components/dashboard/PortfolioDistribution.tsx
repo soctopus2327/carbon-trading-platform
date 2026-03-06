@@ -6,11 +6,11 @@ const projects = [
 
 export default function PortfolioDistribution() {
   return (
-    <div className="bg-white rounded-xl p-6 shadow-md border border-gray-100">
+    <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 h-full">
       <h3 className="font-bold text-lg text-gray-900 mb-1">Portfolio Distribution</h3>
-      <p className="text-sm text-gray-500 mb-6">By project type</p>
+      <p className="text-sm text-gray-500 mb-4">By project type</p>
 
-      <div className="space-y-5">
+      <div className="space-y-4">
         {projects.map((p) => (
           <div key={p.name}>
             <div className="flex justify-between text-sm mb-2">
