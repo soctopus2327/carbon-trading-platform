@@ -1,6 +1,5 @@
 import { useState } from "react";
 import axios from "axios";
-import PageLayout from "../components/layout/PageLayout";
 
 export default function CompanyRegister({ onSuccess }) {
   const [isLogin, setIsLogin] = useState(false);
@@ -11,7 +10,7 @@ export default function CompanyRegister({ onSuccess }) {
     email: "",
     password: "",
     confirmPassword: "",
-    companyType: "INDIVIDUAL"
+    companyType: "INDIVIDUAL",
   });
 
   const handleChange = (e) => {
@@ -143,11 +142,14 @@ export default function CompanyRegister({ onSuccess }) {
   };
 
   return (
-    <PageLayout title={isLogin ? "Login" : "Register Company"} description={isLogin ? "Login to your account" : "Create a new company account"}>
-      <div className="h-full bg-gradient-to-br from-green-50 to-blue-50 p-6 flex items-center justify-center">
-        <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full border border-green-100">
-          <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold text-gray-900">
+    <div className="h-screen w-full bg-gradient-to-br from-emerald-50 via-white to-cyan-50 overflow-y-auto">
+      <div className="min-h-full p-4 md:p-6 flex items-center justify-center">
+        <div className="bg-white rounded-2xl shadow-lg p-6 md:p-8 max-w-md w-full border border-emerald-100 my-4">
+          <div className="text-center mb-6">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-semibold mb-4">
+              Carbon Trading Platform
+            </div>
+            <h2 className="text-2xl md:text-3xl font-bold text-gray-900">
               {isLogin ? "Welcome Back" : "Register Company"}
             </h2>
             <p className="text-gray-600 text-sm mt-2">
@@ -156,7 +158,7 @@ export default function CompanyRegister({ onSuccess }) {
           </div>
 
           {/* Toggle Buttons */}
-          <div className="flex gap-2 mb-8 bg-gray-100 p-1 rounded-lg">
+          <div className="grid grid-cols-2 gap-2 mb-6 bg-slate-100 p-1 rounded-xl border border-slate-200">
             <button
               type="button"
               onClick={() => {
@@ -167,13 +169,13 @@ export default function CompanyRegister({ onSuccess }) {
                   email: "",
                   password: "",
                   confirmPassword: "",
-                  companyType: "EMITTER"
+                  companyType: "INDIVIDUAL",
                 });
               }}
-              className={`flex-1 py-2 rounded-lg font-semibold transition ${
+              className={`py-2.5 rounded-lg font-semibold transition ${
                 !isLogin
-                  ? "bg-green-600 text-white shadow-md"
-                  : "text-gray-700 hover:text-gray-900"
+                  ? "bg-emerald-600 text-white shadow-sm"
+                  : "text-slate-700 hover:text-slate-900"
               }`}
             >
               Register
@@ -188,13 +190,13 @@ export default function CompanyRegister({ onSuccess }) {
                   email: "",
                   password: "",
                   confirmPassword: "",
-                  companyType: "EMITTER"
+                  companyType: "INDIVIDUAL",
                 });
               }}
-              className={`flex-1 py-2 rounded-lg font-semibold transition ${
+              className={`py-2.5 rounded-lg font-semibold transition ${
                 isLogin
-                  ? "bg-green-600 text-white shadow-md"
-                  : "text-gray-700 hover:text-gray-900"
+                  ? "bg-emerald-600 text-white shadow-sm"
+                  : "text-slate-700 hover:text-slate-900"
               }`}
             >
               Login
@@ -202,7 +204,7 @@ export default function CompanyRegister({ onSuccess }) {
           </div>
 
           {error && (
-            <div className="bg-red-50 border-2 border-red-300 text-red-700 px-4 py-3 rounded-lg mb-4 font-medium">
+            <div className="bg-red-50 border border-red-300 text-red-700 px-4 py-3 rounded-lg mb-4 text-sm font-medium">
               {error}
             </div>
           )}
@@ -220,7 +222,7 @@ export default function CompanyRegister({ onSuccess }) {
                   value={formData.companyName}
                   onChange={handleChange}
                   placeholder="Enter company name"
-                  className="w-full border-2 border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:border-green-500 transition"
+                  className="w-full border border-slate-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-emerald-200 focus:border-emerald-500 transition"
                   required={!isLogin}
                 />
               </div>
@@ -237,7 +239,7 @@ export default function CompanyRegister({ onSuccess }) {
                 value={formData.email}
                 onChange={handleChange}
                 placeholder="company@example.com"
-                className="w-full border-2 border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:border-green-500 transition"
+                className="w-full border border-slate-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-emerald-200 focus:border-emerald-500 transition"
                 required
               />
             </div>
@@ -252,7 +254,7 @@ export default function CompanyRegister({ onSuccess }) {
                   name="companyType"
                   value={formData.companyType}
                   onChange={handleChange}
-                  className="w-full border-2 border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:border-green-500 transition"
+                  className="w-full border border-slate-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-emerald-200 focus:border-emerald-500 transition"
                 >
                   <option value="INDIVIDUAL">INDIVIDUAL</option>
                   <option value="ALLIANCE">ALLIANCE</option>
@@ -272,7 +274,7 @@ export default function CompanyRegister({ onSuccess }) {
                 value={formData.password}
                 onChange={handleChange}
                 placeholder={isLogin ? "Enter your password" : "Minimum 6 characters"}
-                className="w-full border-2 border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:border-green-500 transition"
+                className="w-full border border-slate-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-emerald-200 focus:border-emerald-500 transition"
                 required
               />
             </div>
@@ -289,7 +291,7 @@ export default function CompanyRegister({ onSuccess }) {
                   value={formData.confirmPassword}
                   onChange={handleChange}
                   placeholder="Confirm password"
-                  className="w-full border-2 border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:border-green-500 transition"
+                  className="w-full border border-slate-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-emerald-200 focus:border-emerald-500 transition"
                   required={!isLogin}
                 />
               </div>
@@ -299,29 +301,29 @@ export default function CompanyRegister({ onSuccess }) {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-green-600 to-green-700 text-white font-bold py-3 rounded-lg hover:from-green-700 hover:to-green-800 transition disabled:opacity-50 shadow-md hover:shadow-lg mt-6"
+              className="w-full bg-gradient-to-r from-emerald-600 to-emerald-700 text-white font-bold py-3 rounded-lg hover:from-emerald-700 hover:to-emerald-800 transition disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow mt-2"
             >
               {loading ? (isLogin ? "Logging in..." : "Registering...") : (isLogin ? "Login" : "Register Company")}
             </button>
           </form>
 
           {/* Footer */}
-          <p className="text-center text-xs text-gray-500 mt-6">
+          <p className="text-center text-xs text-gray-500 mt-5">
             Your data is secure and encrypted
           </p>
 
           {/* Platform Admin Link */}
-          <div className="text-center mt-4 text-white">
+          <div className="text-center mt-3">
             <button
               type="button"
               onClick={() => window.location.href = "/admin"}
-              className="text-xs text-white hover:text-gray-600 underline"
+              className="text-xs text-white hover:text-slate-700 underline"
             >
               Platform Admin Login
             </button>
           </div>
         </div>
       </div>
-    </PageLayout>
+    </div>
   );
 }
