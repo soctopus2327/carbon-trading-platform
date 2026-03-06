@@ -144,7 +144,7 @@ export default function CompanyRegister({ onSuccess }) {
 
   return (
     <PageLayout title={isLogin ? "Login" : "Register Company"} description={isLogin ? "Login to your account" : "Create a new company account"}>
-      <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 p-6 flex items-center justify-center">
+      <div className="h-full bg-gradient-to-br from-green-50 to-blue-50 p-6 flex items-center justify-center">
         <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full border border-green-100">
           <div className="text-center mb-8">
             <h2 className="text-3xl font-bold text-gray-900">

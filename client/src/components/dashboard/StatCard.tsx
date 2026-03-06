@@ -14,7 +14,7 @@ export default function StatCard({
   subtitle,
 }: Props) {
   return (
-    <div className="rounded-xl bg-white p-6 shadow-md hover:shadow-lg transition border border-gray-100">
+    <div className="rounded-xl bg-white p-4 shadow-sm hover:shadow-md transition border border-gray-100 h-full">
       <div className="flex justify-between items-center">
         <span className="text-sm font-medium text-gray-600">{title}</span>
         <span
@@ -28,8 +28,8 @@ export default function StatCard({
         </span>
       </div>
 
-      <div className="mt-2 text-3xl font-bold text-gray-900">{value}</div>
-      <div className="mt-2 text-sm text-gray-500">{subtitle}</div>
+      <div className="mt-1 text-2xl font-bold text-gray-900">{value}</div>
+      <div className="mt-1 text-sm text-gray-500">{subtitle}</div>
     </div>
   );
 }

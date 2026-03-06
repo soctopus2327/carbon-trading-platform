@@ -12,6 +12,7 @@ const txRoutes = require("./routes/transactionRoutes");
 const cmpRoutes = require("./routes/companyRoutes");
 const tradeRoutes = require("./routes/tradeRoutes");
 const platformAdminRoutes = require("./routes/platformAdminRoutes");
+const newsRoutes = require("./routes/newsRoutes");
 
 dotenv.config();
 
@@ -24,6 +25,7 @@ app.use("/trade", tradeRoutes);
 app.use("/transactions", txRoutes);
 app.use("/company", cmpRoutes);
 app.use("/platform-admin", platformAdminRoutes);
+app.use("/news", newsRoutes);
 
 async function createPlatformAdmin() {
   try {

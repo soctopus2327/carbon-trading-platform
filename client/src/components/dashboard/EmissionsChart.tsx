@@ -17,13 +17,13 @@ const data = [
 
 export default function EmissionsChart() {
   return (
-    <div className="bg-white rounded-xl p-6 shadow-md border border-gray-100">
-      <div className="mb-6">
+    <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 h-full">
+      <div className="mb-3">
         <h3 className="font-bold text-lg text-gray-900">Emissions vs Offsets</h3>
         <p className="text-sm text-gray-500">6-month trend analysis</p>
       </div>
 
-      <ResponsiveContainer width="100%" height={260}>
+      <ResponsiveContainer width="100%" height={220}>
         <LineChart data={data}>
           <XAxis dataKey="month" stroke="#9ca3af" />
           <YAxis stroke="#9ca3af" />
