@@ -8,15 +8,13 @@ exports.createTrade = async (req, res) => {
     const { pricePerCredit, quantity } = req.body;
 
     // Get seller company from DB
-    const company = await Company.findById(req.user.id);
-    console.log("REQ.USER:", req.user);
-    console.log("COMPANY FIELD:", req.user.company);
-
+    const company = await Company.findById(req.user.company);
+    //console.log("REQ.USER:", req.user);
+    //console.log("COMPANY FIELD:", req.user.company);
     if (!company) {
       return res.status(404).json({ message: "Company not found" });
     }
 
-    // Enforce ACTIVE status
     if (company.status !== COMPANY_STATUS.ACTIVE) {
       return res.status(403).json({
         message: "Only ACTIVE companies can create trade listings"
