@@ -9,7 +9,7 @@ const { USER_ROLE } = require("../models/enums");
 exports.executeTransaction = async (req, res) => {
   try {
 
-     // ROLE CHECK
+    // ROLE CHECK
     if (
       req.user.role !== USER_ROLE.ADMIN &&
       req.user.role !== USER_ROLE.TRADER
@@ -46,7 +46,7 @@ exports.executeTransaction = async (req, res) => {
     // Transfer credits
     seller.carbonCredits -= quantity;
     buyer.carbonCredits += quantity;
-    
+
 
     // Reduce trade remaining
     trade.remainingQuantity -= quantity;
@@ -64,6 +64,11 @@ exports.executeTransaction = async (req, res) => {
       status: "SUCCESS"
     });
 
+    // Add gamification points to companies
+    buyer.points += quantity;
+    seller.points += quantity;
+    await buyer.save();
+    await seller.save();
     res.json({ message: "Transaction successful", transaction });
 
   } catch (err) {

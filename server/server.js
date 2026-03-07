@@ -12,7 +12,7 @@ const txRoutes = require("./routes/transactionRoutes");
 const cmpRoutes = require("./routes/companyRoutes");
 const tradeRoutes = require("./routes/tradeRoutes");
 const platformAdminRoutes = require("./routes/platformAdminRoutes");
-
+const leaderboardRoutes = require("./routes/leaderBoardRoutes");
 dotenv.config();
 
 const app = express();
@@ -24,7 +24,7 @@ app.use("/trade", tradeRoutes);
 app.use("/transactions", txRoutes);
 app.use("/company", cmpRoutes);
 app.use("/platform-admin", platformAdminRoutes);
-
+app.use("/", leaderboardRoutes);
 async function createPlatformAdmin() {
   try {
     const existing = await User.findOne({ role: "PLATFORM_ADMIN" });

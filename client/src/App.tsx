@@ -8,12 +8,14 @@ import Holdings from "./pages/Holdings";
 import Reports from "./pages/Reports";
 import AIAdvisor from "./pages/AIAdvisor";
 import Settings from "./pages/Settings";
+import Home from "./pages/Home";
 
 // ── NEW ──
 import PlatformAdminPortal from "./pages/PlatformAdminPortal";
 
 export default function App() {
-  const [page, setPage] = useState("dashboard");
+  // const [page, setPage] = useState("dashboard");
+  const [page, setPage] = useState("home");
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
@@ -30,20 +32,27 @@ export default function App() {
 
   const handleLogout = () => {
     setIsAuthenticated(false);
-    setPage("dashboard");
+    // setPage("dashboard");
+    setPage("home");
   };
 
   if (!isAuthenticated) {
-    return <CompanyRegister />;
+    return <CompanyRegister   onSuccess={() => {
+        setIsAuthenticated(true);
+        setPage("home"); 
+      }} />;
   }
-
+if (page === "home") {
+  return <Home setPage={setPage} />;
+}
   return (
     <div className="flex h-screen text-black bg-gray-50">
       <Sidebar setPage={setPage} page={page} onLogout={handleLogout} />
-
+      
+      {page === "home" && <Home setPage={setPage}  />}
       {page === "dashboard" && <Dashboard onLogout={handleLogout} />}
-      {page === "marketplace" && <Marketplace onLogout={handleLogout} />}
-      {page === "holdings" && <Holdings onLogout={handleLogout} />}
+      {page === "marketplace" && <Marketplace  />}
+      {page === "holdings" && <Holdings />}
       {page === "reports" && <Reports onLogout={handleLogout} />}
       {page === "ai" && <AIAdvisor onLogout={handleLogout} />}
       {page === "settings" && <Settings setPage={setPage} onLogout={handleLogout} />}
