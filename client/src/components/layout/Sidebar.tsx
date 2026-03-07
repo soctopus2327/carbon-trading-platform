@@ -45,7 +45,7 @@ export default function Sidebar({ setPage, page, onLogout }: SidebarProps) {
       <div>
         {/* Logo */}
         <div className="p-6 border-b border-green-500">
-          <div className="text-2xl font-bold">Desis 2025</div>
+          <div className="text-2xl font-bold">CarbonX</div>
           <p className="text-xs text-green-100 mt-1">
             Carbon Trading Platform
           </p>
