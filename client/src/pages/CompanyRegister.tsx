@@ -53,6 +53,7 @@ export default function CompanyRegister({ onSuccess }) {
           ...response.data.user,
           company: response.data.user.company
         }));
+        localStorage.setItem("role", response.data.user.role);
 
         alert("Login successful!");
         
@@ -122,6 +123,7 @@ export default function CompanyRegister({ onSuccess }) {
           ...response.data.user,
           company: response.data.company._id
         }));
+        localStorage.setItem("role", response.data.user.role);
 
         alert("Company registered successfully!");
         
