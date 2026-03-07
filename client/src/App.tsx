@@ -13,6 +13,7 @@ import ManagePeople from "./pages/ManagePeople";
 
 const PAGE_TO_PATH: Record<string, string> = {
   home: "/",
+  register: "/register",
   dashboard: "/dashboard",
   marketplace: "/marketplace",
   holdings: "/holdings",
@@ -50,8 +51,19 @@ export default function App() {
     const rawUser = localStorage.getItem("user");
     const authed = !!(token && rawUser);
     setIsAuthenticated(authed);
+    const requestedPage = PATH_TO_PAGE[window.location.pathname] || "home";
 
-    if (!authed) return;
+    if (!authed) {
+      if (requestedPage === "register") {
+        setPage("register");
+      } else {
+        setPage("home");
+        if (window.location.pathname !== "/") {
+          window.history.replaceState({}, "", "/");
+        }
+      }
+      return;
+    }
 
     if (rawUser) {
       try {
@@ -62,7 +74,6 @@ export default function App() {
       }
     }
 
-    const requestedPage = PATH_TO_PAGE[window.location.pathname] || "dashboard";
     const role = currentRole();
 
     if (requestedPage === "manage-people" && role !== "ADMIN") {
@@ -75,8 +86,8 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    if (!isAuthenticated) return;
-    const targetPath = PAGE_TO_PATH[page] || "/dashboard";
+    const safePage = !isAuthenticated && page !== "home" && page !== "register" ? "home" : page;
+    const targetPath = PAGE_TO_PATH[safePage] || "/";
     if (window.location.pathname !== targetPath) {
       window.history.replaceState({}, "", targetPath);
     }
@@ -89,15 +100,19 @@ export default function App() {
   };
 
   if (!isAuthenticated) {
-    return (
-      <CompanyRegister
-        onSuccess={() => {
-          setIsAuthenticated(true);
-          setPage("dashboard");
-          window.history.replaceState({}, "", "/dashboard");
-        }}
-      />
-    );
+    if (page === "register") {
+      return (
+        <CompanyRegister
+          onSuccess={() => {
+            setIsAuthenticated(true);
+            setPage("dashboard");
+            window.history.replaceState({}, "", "/dashboard");
+          }}
+        />
+      );
+    }
+
+    return <Home setPage={setPage} />;
   }
 
   if (page === "home") {
