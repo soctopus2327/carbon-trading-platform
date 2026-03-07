@@ -64,7 +64,9 @@ export default function PageLayout({
           {isAdmin && (
             <button
               onClick={() => {
-                if (!onManagePeoplePage) window.location.href = "/manage-people";
+                if (onManagePeoplePage) return;
+                window.history.pushState({}, "", "/manage-people");
+                window.dispatchEvent(new PopStateEvent("popstate"));
               }}
               className={`px-6 py-2 rounded-lg shadow-md transition font-semibold ${
                 onManagePeoplePage

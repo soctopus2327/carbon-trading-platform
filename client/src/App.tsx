@@ -86,6 +86,38 @@ export default function App() {
   }, []);
 
   useEffect(() => {
+    const syncPageFromPath = () => {
+      const token = localStorage.getItem("token");
+      const rawUser = localStorage.getItem("user");
+      const authed = !!(token && rawUser);
+      setIsAuthenticated(authed);
+
+      const requestedPage = PATH_TO_PAGE[window.location.pathname] || (authed ? "dashboard" : "home");
+      const role = currentRole();
+
+      if (!authed) {
+        if (requestedPage === "register") {
+          setPage("register");
+          return;
+        }
+        setPage("home");
+        return;
+      }
+
+      if (requestedPage === "manage-people" && role !== "ADMIN") {
+        setPage("dashboard");
+        window.history.replaceState({}, "", "/dashboard");
+        return;
+      }
+
+      setPage(requestedPage);
+    };
+
+    window.addEventListener("popstate", syncPageFromPath);
+    return () => window.removeEventListener("popstate", syncPageFromPath);
+  }, []);
+
+  useEffect(() => {
     const safePage = !isAuthenticated && page !== "home" && page !== "register" ? "home" : page;
     const targetPath = PAGE_TO_PATH[safePage] || "/";
     if (window.location.pathname !== targetPath) {
