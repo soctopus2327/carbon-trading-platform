@@ -9,6 +9,7 @@ import Reports from "./pages/Reports";
 import AIAdvisor from "./pages/AIAdvisor";
 import Settings from "./pages/Settings";
 import Home from "./pages/Home";
+import News from "./pages/News";
 
 // ── NEW ──
 import PlatformAdminPortal from "./pages/PlatformAdminPortal";
@@ -46,14 +47,15 @@ if (page === "home") {
   return <Home setPage={setPage} />;
 }
   return (
-    <div className="flex h-screen text-black bg-gray-50">
+    <div className="flex h-screen text-black bg-gray-50 overflow-hidden">
       <Sidebar setPage={setPage} page={page} onLogout={handleLogout} />
       
       {page === "home" && <Home setPage={setPage}  />}
       {page === "dashboard" && <Dashboard onLogout={handleLogout} />}
       {page === "marketplace" && <Marketplace  />}
-      {page === "holdings" && <Holdings />}
+      {page === "holdings" && <Holdings onLogout={handleLogout}/>}
       {page === "reports" && <Reports onLogout={handleLogout} />}
+      {page === "news" && <News onLogout={handleLogout} />}
       {page === "ai" && <AIAdvisor onLogout={handleLogout} />}
       {page === "settings" && <Settings setPage={setPage} onLogout={handleLogout} />}
       {page === "register" && (

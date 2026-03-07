@@ -1,11 +1,10 @@
-import Header from "./Header";
-
 export default function PageLayout({
 
   title,
   description,
   children,
   onLogout,
+  compact = false,
 
 }: {
 
@@ -13,22 +12,22 @@ export default function PageLayout({
   description?: string;
   children: React.ReactNode;
   onLogout?: () => void;
+  compact?: boolean;
 
 }) {
 
   return (
 
-    <main className="flex-1 bg-gray-50 min-h-screen">
-
-
-      {/* Global Header */}
-
-      <Header onLogout={onLogout} />
+    <main className="flex-1 bg-gray-50 h-screen flex flex-col min-h-0">
 
 
       {/* Page Heading */}
 
-      <div className="px-6 py-8 flex justify-between items-center border-b border-gray-200 bg-white">
+      <div
+        className={`px-6 flex justify-between items-center border-b border-gray-200 bg-white ${
+          compact ? "py-5" : "py-8"
+        }`}
+      >
 
         <div>
 
@@ -62,7 +61,7 @@ export default function PageLayout({
 
       {/* Page Content */}
 
-      <div className="px-6 py-8">
+      <div className={`px-6 ${compact ? "py-5" : "py-8"} flex-1 overflow-y-auto min-h-0`}>
 
         {children}
 

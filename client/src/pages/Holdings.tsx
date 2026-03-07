@@ -18,7 +18,7 @@ interface Transaction {
   };
 }
 
-export default function Holdings() {
+export default function Holdings({ onLogout }: { onLogout?: () => void }) {
   const [buyHistory, setBuyHistory] = useState<Transaction[]>([]);
   const [sellHistory, setSellHistory] = useState<Transaction[]>([]);
   const [summary, setSummary] = useState({
