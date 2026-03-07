@@ -53,6 +53,7 @@ const Home: React.FC<HomeProps> = ({ setPage }) => {
                             <button onClick={() => setPage("marketplace")} className="hover:text-green-600">Marketplace</button>
                             <button onClick={() => setPage("holdings")} className="hover:text-green-600">Holdings</button>
                             <button onClick={() => setPage("reports")} className="hover:text-green-600">Reports</button>
+                            <button onClick={() => setPage("news")} className="hover:text-green-600">News</button>
                             <button onClick={() => setPage("ai")} className="hover:text-green-600">AI Advisor</button>
                             <button onClick={() => setPage("settings")} className="hover:text-green-600">Settings</button>
                             <button onClick={logout} className="text-red-500 hover:text-red-600">Logout</button>
