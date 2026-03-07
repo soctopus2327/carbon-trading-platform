@@ -1,5 +1,4 @@
-import React, { useEffect, useState } from "react";
-
+import React, { useEffect, useState, useRef } from "react";
 interface HomeProps {
     setPage: (page: string) => void;
 }
@@ -7,6 +6,7 @@ interface HomeProps {
 const Home: React.FC<HomeProps> = ({ setPage }) => {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [leaderboard, setLeaderboard] = useState<any[]>([]);
+    const leaderboardRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         const token = localStorage.getItem("token");
@@ -19,6 +19,12 @@ const Home: React.FC<HomeProps> = ({ setPage }) => {
             .then(data => setLeaderboard(data))
             .catch(err => console.error(err));
     }, []);
+  const goToLeaderboard = () => {
+        setPage("home"); // Make sure we are on home page
+        setTimeout(() => {
+            leaderboardRef.current?.scrollIntoView({ behavior: "smooth" });
+        }, 100); // slight delay to ensure page renders
+    };
 
     const logout = () => {
         localStorage.removeItem("token");
@@ -50,12 +56,8 @@ const Home: React.FC<HomeProps> = ({ setPage }) => {
                     {isLoggedIn ? (
                         <div className="flex gap-8 text-gray-700 font-medium items-center">
                             <button onClick={() => setPage("dashboard")} className="hover:text-green-600">Dashboard</button>
-                            <button onClick={() => setPage("marketplace")} className="hover:text-green-600">Marketplace</button>
-                            <button onClick={() => setPage("holdings")} className="hover:text-green-600">Holdings</button>
-                            <button onClick={() => setPage("reports")} className="hover:text-green-600">Reports</button>
-                            <button onClick={() => setPage("news")} className="hover:text-green-600">News</button>
-                            <button onClick={() => setPage("ai")} className="hover:text-green-600">AI Advisor</button>
-                            <button onClick={() => setPage("settings")} className="hover:text-green-600">Settings</button>
+                            <button onClick={goToLeaderboard} className="hover:text-green-600">Leaderboard</button>
+                            <button onClick={()=>setPage("dashboard")} className="hover:text-green-600">Forum</button>
                             <button onClick={logout} className="text-red-500 hover:text-red-600">Logout</button>
                         </div>
                     ) : (
@@ -154,7 +156,7 @@ const Home: React.FC<HomeProps> = ({ setPage }) => {
             </section>
 
             {/* LEADERBOARD */}
-            <section className="bg-gray-100 py-20">
+            <section ref={leaderboardRef} className="bg-gray-100 py-20">
                 <div className="max-w-6xl mx-auto px-8">
                     <h2 className="text-4xl font-bold text-center mb-12">
                         Climate Leaders Leaderboard
