@@ -53,6 +53,7 @@ export default function CompanyRegister({ onSuccess }) {
           ...response.data.user,
           company: response.data.user.company
         }));
+        localStorage.setItem("role", response.data.user.role);
 
         alert("Login successful!");
         
@@ -122,6 +123,7 @@ export default function CompanyRegister({ onSuccess }) {
           ...response.data.user,
           company: response.data.company._id
         }));
+        localStorage.setItem("role", response.data.user.role);
 
         alert("Company registered successfully!");
         
@@ -142,9 +144,16 @@ export default function CompanyRegister({ onSuccess }) {
   };
 
   return (
-    <div className="h-screen w-full bg-gradient-to-br from-emerald-50 via-white to-cyan-50 overflow-y-auto">
-      <div className="min-h-full p-4 md:p-6 flex items-center justify-center">
-        <div className="bg-white rounded-2xl shadow-lg p-6 md:p-8 max-w-md w-full border border-emerald-100 my-4">
+    <div
+      className="min-h-screen w-full overflow-y-auto bg-cover bg-center bg-no-repeat relative"
+      style={{
+        backgroundImage:
+          "url('https://png.pngtree.com/background/20211215/original/pngtree-abstract-style-green-texture-background-picture-image_1459046.jpg')"
+      }}
+    >
+      <div className="absolute inset-0 bg-slate-900/45" />
+      <div className="relative min-h-screen p-4 md:p-6 flex items-center justify-center">
+        <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-lg p-6 md:p-8 max-w-md w-full border border-emerald-100 my-4">
           <div className="text-center mb-6">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-semibold mb-4">
               Carbon Trading Platform

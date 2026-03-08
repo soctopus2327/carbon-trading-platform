@@ -10,8 +10,20 @@ export default function Sidebar({ setPage, page, onLogout }: SidebarProps) {
   const [role, setRole] = useState<string | null>(null);
 
   useEffect(() => {
-    const storedRole = localStorage.getItem("role");
-    setRole(storedRole);
+    const rawUser = localStorage.getItem("user");
+    if (rawUser) {
+      try {
+        const parsed = JSON.parse(rawUser);
+        if (parsed?.role) {
+          setRole(parsed.role);
+          return;
+        }
+      } catch {
+        // fallback below
+      }
+    }
+
+    setRole(localStorage.getItem("role"));
   }, []);
 
   const handleLogout = () => {
@@ -33,7 +45,7 @@ export default function Sidebar({ setPage, page, onLogout }: SidebarProps) {
       <div>
         {/* Logo */}
         <div className="p-6 border-b border-green-500">
-          <div className="text-2xl font-bold">Desis 2025</div>
+          <div className="text-2xl font-bold">CarbonX</div>
           <p className="text-xs text-green-100 mt-1">
             Carbon Trading Platform
           </p>
@@ -79,28 +91,10 @@ export default function Sidebar({ setPage, page, onLogout }: SidebarProps) {
           />
 
           <NavItem
-            label="AI Advisor"
+            label="AI Emission Advisor"
             active={page === "ai"}
             onClick={() => setPage("ai")}
           />
-
-          {/* Admin panel visible to ADMIN + SUPER_ADMIN */}
-          {(role === "ADMIN" || role === "SUPER_ADMIN") && (
-            <NavItem
-              label="Admin Panel"
-              active={page === "admin"}
-              onClick={() => setPage("admin")}
-            />
-          )}
-
-          {/* Only SUPER ADMIN */}
-          {role === "SUPER_ADMIN" && (
-            <NavItem
-              label="Super Admin Dashboard"
-              active={page === "super-admin"}
-              onClick={() => setPage("super-admin")}
-            />
-          )}
 
           <NavItem
             label="Settings"

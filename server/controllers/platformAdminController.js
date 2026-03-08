@@ -30,7 +30,7 @@ exports.login = async (req, res) => {
             return res.status(400).json({ message: "Wrong password" });
 
         res.json({
-            token: generateToken(user._id),
+            token: generateToken(user),
             user: {
                 _id: user._id,
                 name: user.name,
@@ -482,6 +482,12 @@ exports.deleteUser = async (req, res) => {
             return res.status(403).json({ message: "Cannot delete a Platform Admin" });
 
         await User.findByIdAndDelete(req.params.id);
+        if (user.company) {
+            await Company.updateOne(
+                { _id: user.company },
+                { $pull: { users: user._id } }
+            );
+        }
 
         res.json({ message: "User deleted successfully" });
 

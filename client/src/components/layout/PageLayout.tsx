@@ -15,6 +15,17 @@ export default function PageLayout({
   compact?: boolean;
 
 }) {
+  let role: string | null = null;
+  try {
+    const rawUser = localStorage.getItem("user");
+    role = rawUser ? JSON.parse(rawUser)?.role || null : null;
+  } catch {
+    role = null;
+  }
+  if (!role) role = localStorage.getItem("role");
+
+  const isAdmin = role === "ADMIN";
+  const onManagePeoplePage = window.location.pathname === "/manage-people";
 
   return (
 
@@ -49,12 +60,28 @@ export default function PageLayout({
 
         </div>
 
+        <div className="flex items-center gap-3">
+          {isAdmin && (
+            <button
+              onClick={() => {
+                if (onManagePeoplePage) return;
+                window.history.pushState({}, "", "/manage-people");
+                window.dispatchEvent(new PopStateEvent("popstate"));
+              }}
+              className={`px-6 py-2 rounded-lg shadow-md transition font-semibold ${
+                onManagePeoplePage
+                  ? "bg-blue-100 text-blue-700 cursor-default"
+                  : "bg-blue-600 text-white hover:bg-blue-700 hover:shadow-lg"
+              }`}
+            >
+              Manage People
+            </button>
+          )}
 
-        <button className="bg-gradient-to-r from-green-500 to-green-600 text-white px-6 py-2 rounded-lg shadow-md hover:shadow-lg hover:from-green-600 hover:to-green-700 transition font-semibold">
-
-          Alliance Funds
-
-        </button>
+          <button className="bg-gradient-to-r from-green-500 to-green-600 text-white px-6 py-2 rounded-lg shadow-md hover:shadow-lg hover:from-green-600 hover:to-green-700 transition font-semibold">
+            Alliance Funds
+          </button>
+        </div>
 
       </div>
 

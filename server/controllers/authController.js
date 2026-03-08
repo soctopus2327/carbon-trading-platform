@@ -30,7 +30,10 @@ exports.registerCompany = async (req, res) => {
     });
 
     // 4️⃣ Generate token (use user._id like original)
-    const token = generateToken(user._id);
+    company.users = [user._id];
+    await company.save();
+
+    const token = generateToken(user);
 
     res.json({
       token,
@@ -59,7 +62,7 @@ exports.login = async (req, res) => {
     if (!isMatch)
       return res.status(400).json({ message: "Wrong password" });
 
-    const token = generateToken(user._id);
+    const token = generateToken(user);
 
     res.json({
       token,

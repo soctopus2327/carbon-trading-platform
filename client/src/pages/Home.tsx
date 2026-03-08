@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
+import { LANGUAGE_OPTIONS, getSavedLanguage, setSiteLanguage } from "../components/GoogleTranslate";
 interface HomeProps {
     setPage: (page: string) => void;
 }
@@ -6,6 +7,7 @@ interface HomeProps {
 const Home: React.FC<HomeProps> = ({ setPage }) => {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [leaderboard, setLeaderboard] = useState<any[]>([]);
+    const [language, setLanguage] = useState(getSavedLanguage());
     const leaderboardRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -39,34 +41,60 @@ const Home: React.FC<HomeProps> = ({ setPage }) => {
         if (isLoggedIn) setPage("dashboard");
         else setPage("register");
     };
+    const languageSwitcher = (
+        <div className="flex items-center gap-2">
+            <span className="text-sm text-gray-700 font-medium whitespace-nowrap">
+                Change language:
+            </span>
+            <select
+                value={language}
+                onChange={(e) => {
+                    const lang = e.target.value;
+                    setLanguage(lang);
+                    setSiteLanguage(lang);
+                }}
+                className="h-10 border border-gray-300 rounded-lg px-3 text-sm bg-white min-w-[150px]"
+            >
+                {LANGUAGE_OPTIONS.map((option) => (
+                    <option key={option.code} value={option.code}>
+                        {option.label}
+                    </option>
+                ))}
+            </select>
+        </div>
+    );
 
     return (
         <div className="min-h-screen flex flex-col bg-gray-50">
 
             {/* NAVBAR */}
-            <nav className="fixed w-full z-50 bg-white/80 backdrop-blur border-b">
+            <nav className="fixed  w-full z-50 bg-white/80 backdrop-blur border-b">
                 <div className="max-w-7xl mx-auto px-8 py-4 flex justify-between items-center">
                     <h1
                         className="text-2xl font-bold text-green-700 cursor-pointer"
                         onClick={() => setPage("home")}
                     >
-                        DESIS 2025
+                        CarbonX
                     </h1>
 
                     {isLoggedIn ? (
                         <div className="flex gap-8 text-gray-700 font-medium items-center">
+                            {languageSwitcher}
                             <button onClick={() => setPage("dashboard")} className="hover:text-green-600">Dashboard</button>
                             <button onClick={goToLeaderboard} className="hover:text-green-600">Leaderboard</button>
                             <button onClick={()=>setPage("dashboard")} className="hover:text-green-600">Forum</button>
-                            <button onClick={logout} className="text-red-500 hover:text-red-600">Logout</button>
+                            <button onClick={logout} className="text-white hover:text-red-600">Logout</button>
                         </div>
                     ) : (
-                        <button
-                            onClick={() => setPage("register")}
-                            className="bg-green-600 text-white px-5 py-2 rounded-lg hover:bg-green-700"
-                        >
-                            Login / Signup
-                        </button>
+                        <div className="flex items-center gap-4">
+                            {languageSwitcher}
+                            <button
+                                onClick={() => setPage("register")}
+                                className="bg-green-600 text-white px-5 py-2 rounded-lg hover:bg-green-700"
+                            >
+                                Login / Signup
+                            </button>
+                        </div>
                     )}
                 </div>
             </nav>
@@ -83,7 +111,7 @@ const Home: React.FC<HomeProps> = ({ setPage }) => {
             >
                 <div className="absolute inset-0 bg-black/55"></div>
                 <div className="relative max-w-4xl text-center px-6">
-                    <h1 className="text-6xl font-bold mb-6 text-white">
+                    <h1 className="font-sans text-6xl font-bold mb-6 text-white">
                         Carbon Trading <span className="text-green-400">Platform</span>
                     </h1>
                     <p className="text-xl text-gray-200 mb-10">
@@ -104,7 +132,7 @@ const Home: React.FC<HomeProps> = ({ setPage }) => {
             {/* WHY CHOOSE OUR PLATFORM */}
             <section className="py-20 bg-white">
                 <div className="max-w-7xl mx-auto px-8 text-center">
-                    <h2 className="text-4xl font-bold mb-12">Why Choose DESIS 2025?</h2>
+                    <h2 className="text-4xl font-bold mb-12">Why Choose CarbonX?</h2>
 
                     <div className="grid md:grid-cols-3 gap-10">
                         <div className="p-8 bg-gray-50 rounded-2xl shadow hover:shadow-lg transition">
