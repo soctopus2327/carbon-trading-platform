@@ -89,6 +89,10 @@ const companySchema = new mongoose.Schema({
 
     },
 
+    coins: {           // NEW: earned coins, used for discounts
+    type: Number,
+    default: 0
+},
 
 
     /*

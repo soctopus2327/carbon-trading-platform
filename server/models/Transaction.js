@@ -45,6 +45,10 @@ const transactionSchema = new mongoose.Schema({
         required: true
 
     },
+    discountApplied: {
+        type: Number,
+        default: 0
+    },
 
     createdAt: {
 
