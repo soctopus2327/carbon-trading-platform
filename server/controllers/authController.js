@@ -3,30 +3,27 @@ const Company = require("../models/Company");
 const bcrypt = require("bcryptjs");
 const generateToken = require("../utils/generateToken");
 const { USER_ROLE } = require("../models/enums");
-
+const { sendCompanyRegistrationAlert } = require("../utils/emailService");
 
 // ================= REGISTER COMPANY =================
 exports.registerCompany = async (req, res) => {
   try {
     const { companyName, email, password, companyType } = req.body;
 
-    // 1️⃣ Create company
     const company = await Company.create({
       name: companyName,
       totalCredits: 0,
-      companyType
+      companyType: companyType
     });
 
-    // 2️⃣ Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // 3️⃣ Create MASTER ADMIN user for company
     const user = await User.create({
       name: `${companyName}_MASTER`,
       email,
       password: hashedPassword,
       company: company._id,
-      role: USER_ROLE.ADMIN
+      role: "ADMIN"
     });
 
     // 4️⃣ Generate token (use user._id like original)
@@ -36,7 +33,7 @@ exports.registerCompany = async (req, res) => {
     const token = generateToken(user);
 
     res.json({
-      token,
+      token: generateToken(user._id),
       user,
       company
     });
@@ -45,7 +42,6 @@ exports.registerCompany = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
-
 
 // ================= LOGIN =================
 exports.login = async (req, res) => {

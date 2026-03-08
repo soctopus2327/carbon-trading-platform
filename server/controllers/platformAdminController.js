@@ -4,15 +4,12 @@ const TradeListing = require("../models/TradeListing");
 const Transaction = require("../models/Transaction");
 const bcrypt = require("bcryptjs");
 const generateToken = require("../utils/generateToken");
+const { sendApprovalEmail, sendRejectionEmail, sendBlockEmail } = require("../utils/emailService");
 
 // ─────────────────────────────────────────────
 // AUTH
 // ─────────────────────────────────────────────
 
-/**
- * POST /platform-admin/auth/login
- * Login for platform admin. Rejects non-PLATFORM_ADMIN users.
- */
 exports.login = async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -44,16 +41,10 @@ exports.login = async (req, res) => {
     }
 };
 
-/**
- * POST /platform-admin/auth/seed
- * One-time route to create the initial Platform Admin account.
- * You should remove or protect this route after first use!
- */
 exports.seedPlatformAdmin = async (req, res) => {
     try {
         const { name, email, password, seedSecret } = req.body;
 
-        // Basic guard — set SEED_SECRET in your .env
         if (seedSecret !== process.env.SEED_SECRET) {
             return res.status(403).json({ message: "Invalid seed secret" });
         }
@@ -92,10 +83,6 @@ exports.seedPlatformAdmin = async (req, res) => {
 // DASHBOARD STATS
 // ─────────────────────────────────────────────
 
-/**
- * GET /platform-admin/dashboard
- * Returns summary stats for the platform.
- */
 exports.getDashboardStats = async (req, res) => {
     try {
         const [
@@ -118,7 +105,6 @@ exports.getDashboardStats = async (req, res) => {
             Transaction.countDocuments()
         ]);
 
-        // Total carbon credits across all active companies
         const creditAgg = await Company.aggregate([
             { $match: { status: "ACTIVE" } },
             { $group: { _id: null, total: { $sum: "$carbonCredits" } } }
@@ -147,14 +133,6 @@ exports.getDashboardStats = async (req, res) => {
 // COMPANY MANAGEMENT
 // ─────────────────────────────────────────────
 
-/**
- * GET /platform-admin/companies
- * Returns all companies with filters:
- *   ?status=PENDING|ACTIVE|REJECTED|BLOCKED
- *   ?type=INDIVIDUAL|COMPANY|ALLIANCE
- *   ?search=<name substring>
- *   ?page=1&limit=20
- */
 exports.getAllCompanies = async (req, res) => {
     try {
         const { status, type, search, page = 1, limit = 20 } = req.query;
@@ -188,10 +166,6 @@ exports.getAllCompanies = async (req, res) => {
     }
 };
 
-/**
- * GET /platform-admin/companies/:id
- * Returns full company details including its admin users and recent trades.
- */
 exports.getCompanyDetails = async (req, res) => {
     try {
         const company = await Company.findById(req.params.id)
@@ -202,18 +176,15 @@ exports.getCompanyDetails = async (req, res) => {
         if (!company)
             return res.status(404).json({ message: "Company not found" });
 
-        // Fetch company-level admin users
         const adminUsers = await User.find({
             company: company._id,
             role: "ADMIN"
         }).select("-password");
 
-        // All users in this company
         const allUsers = await User.find({
             company: company._id
         }).select("-password");
 
-        // Recent transactions
         const recentTransactions = await Transaction.find({
             $or: [{ buyerCompany: company._id }, { sellerCompany: company._id }]
         })
@@ -234,10 +205,6 @@ exports.getCompanyDetails = async (req, res) => {
     }
 };
 
-/**
- * PUT /platform-admin/companies/:id/approve
- * Approve a pending company — sets status to ACTIVE.
- */
 exports.approveCompany = async (req, res) => {
     try {
         const company = await Company.findById(req.params.id);
@@ -252,6 +219,10 @@ exports.approveCompany = async (req, res) => {
         company.verifiedBy = req.user._id;
         await company.save();
 
+        // ── Send approval email to company admin ──
+        const adminUser = await User.findOne({ company: company._id, role: "ADMIN" });
+        if (adminUser) await sendApprovalEmail(company.name, adminUser.email);
+
         res.json({
             message: "Company approved successfully",
             company
@@ -262,11 +233,6 @@ exports.approveCompany = async (req, res) => {
     }
 };
 
-/**
- * PUT /platform-admin/companies/:id/reject
- * Reject a pending company — sets status to REJECTED.
- * Body: { reason: "..." }   (optional, stored in aiRecommendation for now)
- */
 exports.rejectCompany = async (req, res) => {
     try {
         const { reason } = req.body;
@@ -284,6 +250,10 @@ exports.rejectCompany = async (req, res) => {
         if (reason) company.aiRecommendation = `Rejection reason: ${reason}`;
         await company.save();
 
+        // ── Send rejection email to company admin ──
+        const adminUser = await User.findOne({ company: company._id, role: "ADMIN" });
+        if (adminUser) await sendRejectionEmail(company.name, adminUser.email, reason);
+
         res.json({
             message: "Company rejected",
             company
@@ -294,11 +264,6 @@ exports.rejectCompany = async (req, res) => {
     }
 };
 
-/**
- * PUT /platform-admin/companies/:id/block
- * Block an active company — sets status to BLOCKED.
- * Body: { reason: "..." }
- */
 exports.blockCompany = async (req, res) => {
     try {
         const { reason } = req.body;
@@ -315,6 +280,10 @@ exports.blockCompany = async (req, res) => {
         if (reason) company.aiRecommendation = `Block reason: ${reason}`;
         await company.save();
 
+        // ── Send block email to company admin ──
+        const adminUser = await User.findOne({ company: company._id, role: "ADMIN" });
+        if (adminUser) await sendBlockEmail(company.name, adminUser.email, reason);
+
         res.json({
             message: "Company blocked",
             company
@@ -325,10 +294,6 @@ exports.blockCompany = async (req, res) => {
     }
 };
 
-/**
- * PUT /platform-admin/companies/:id/unblock
- * Reactivate a blocked company — sets status back to ACTIVE.
- */
 exports.unblockCompany = async (req, res) => {
     try {
         const company = await Company.findById(req.params.id);
@@ -352,11 +317,6 @@ exports.unblockCompany = async (req, res) => {
     }
 };
 
-/**
- * PUT /platform-admin/companies/:id/credits
- * Manually adjust carbon credits for a company.
- * Body: { credits: 500, operation: "SET"|"ADD"|"SUBTRACT" }
- */
 exports.adjustCredits = async (req, res) => {
     try {
         const { credits, operation = "SET" } = req.body;
@@ -392,11 +352,6 @@ exports.adjustCredits = async (req, res) => {
     }
 };
 
-/**
- * DELETE /platform-admin/companies/:id
- * Permanently delete a company and all its users.
- * Use with extreme caution!
- */
 exports.deleteCompany = async (req, res) => {
     try {
         const company = await Company.findById(req.params.id);
@@ -404,9 +359,7 @@ exports.deleteCompany = async (req, res) => {
         if (!company)
             return res.status(404).json({ message: "Company not found" });
 
-        // Remove all users belonging to this company
         await User.deleteMany({ company: company._id });
-
         await Company.findByIdAndDelete(req.params.id);
 
         res.json({ message: "Company and all associated users deleted permanently" });
@@ -418,17 +371,9 @@ exports.deleteCompany = async (req, res) => {
 
 
 // ─────────────────────────────────────────────
-// USER (COMPANY ADMIN) MANAGEMENT
+// USER MANAGEMENT
 // ─────────────────────────────────────────────
 
-/**
- * GET /platform-admin/users
- * Returns all company-level admins across the platform.
- * ?role=ADMIN|TRADER|AUDITOR|VIEWER  (default: ADMIN)
- * ?companyId=<id>
- * ?search=<name or email>
- * ?page=1&limit=20
- */
 exports.getAllCompanyAdmins = async (req, res) => {
     try {
         const { role = "ADMIN", companyId, search, page = 1, limit = 20 } = req.query;
@@ -467,10 +412,6 @@ exports.getAllCompanyAdmins = async (req, res) => {
     }
 };
 
-/**
- * DELETE /platform-admin/users/:id
- * Delete a specific user (cannot delete PLATFORM_ADMIN).
- */
 exports.deleteUser = async (req, res) => {
     try {
         const user = await User.findById(req.params.id);
@@ -498,14 +439,9 @@ exports.deleteUser = async (req, res) => {
 
 
 // ─────────────────────────────────────────────
-// TRANSACTIONS (READ-ONLY AUDIT)
+// TRANSACTIONS AUDIT
 // ─────────────────────────────────────────────
 
-/**
- * GET /platform-admin/transactions
- * Returns all transactions across the platform.
- * ?page=1&limit=20
- */
 exports.getAllTransactions = async (req, res) => {
     try {
         const { page = 1, limit = 20 } = req.query;

@@ -14,13 +14,14 @@ const tradeRoutes = require("./routes/tradeRoutes");
 const platformAdminRoutes = require("./routes/platformAdminRoutes");
 const leaderboardRoutes = require("./routes/leaderBoardRoutes");
 const newsRoutes = require("./routes/newsRoutes");
+const notificationRoutes = require("./routes/notificationRoutes");
 
 dotenv.config();
 
 const app = express();
 app.use(cors());
 app.use(express.json());
-
+app.use("/notifications", notificationRoutes);
 app.use("/auth", authRoutes);
 app.use("/trade", tradeRoutes);
 app.use("/transactions", txRoutes);
