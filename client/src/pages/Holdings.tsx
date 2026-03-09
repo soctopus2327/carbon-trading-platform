@@ -13,7 +13,7 @@ interface Transaction {
   sellerCompany: { _id: string; name: string };
 }
 
-export default function Holdings({ onLogout }: { onLogout?: () => void }) {
+export default function Holdings({ onLogout: _onLogout }: { onLogout?: () => void }) {
   const [buyHistory, setBuyHistory] = useState<Transaction[]>([]);
   const [sellHistory, setSellHistory] = useState<Transaction[]>([]);
   const [summary, setSummary] = useState({
@@ -160,7 +160,7 @@ export default function Holdings({ onLogout }: { onLogout?: () => void }) {
       const options = {
         physics: { enabled: true, stabilization: true, barnesHut: { springLength: 200, avoidOverlap: 0.5 } },
         edges: { smooth: true },
-        nodes: { shape: "ellipse", margin: 10 },
+        nodes: { shape: "ellipse", margin: { top: 10, right: 10, bottom: 10, left: 10 } },
         interaction: { hover: true, tooltipDelay: 200, dragView: true, zoomView: true },
       };
       new Network(container, data, options);

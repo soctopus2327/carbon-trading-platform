@@ -1,7 +1,11 @@
 import PageLayout from "../components/layout/PageLayout";
 import { Sparkles, Bot, ArrowUp } from "lucide-react";
 
-export default function AIAdvisor({ onLogout }) {
+type AIAdvisorProps = {
+  onLogout?: () => void;
+};
+
+export default function AIAdvisor({ onLogout: _onLogout }: AIAdvisorProps) {
 
   return (
 

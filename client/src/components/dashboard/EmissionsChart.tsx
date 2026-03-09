@@ -6,16 +6,13 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
+import type { EmissionsPoint } from "../../data/dashboard.mock";
 
-const data = [
-  { month: "Jan", emissions: 4500, offsets: 3800 },
-  { month: "Feb", emissions: 4300, offsets: 3900 },
-  { month: "Mar", emissions: 4200, offsets: 4100 },
-  { month: "Apr", emissions: 4000, offsets: 4300 },
-  { month: "May", emissions: 3800, offsets: 4500 },
-];
+type EmissionsChartProps = {
+  data: EmissionsPoint[];
+};
 
-export default function EmissionsChart() {
+export default function EmissionsChart({ data }: EmissionsChartProps) {
   return (
     <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 h-full">
       <div className="mb-3">

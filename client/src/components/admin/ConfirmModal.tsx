@@ -1,32 +1,27 @@
-import { useState } from "react";
-
 interface Props {
   title: string;
-  placeholder?: string;
-  onConfirm: (reason: string) => void;
+  message: string;
+  confirmLabel?: string;
+  danger?: boolean;
+  onConfirm: () => void;
   onCancel: () => void;
 }
 
-export default function ReasonModal({ title, placeholder = "Enter reason…", onConfirm, onCancel }: Props) {
-  const [reason, setReason] = useState("");
-
+export default function ConfirmModal({
+  title,
+  message,
+  confirmLabel = "Confirm",
+  danger = false,
+  onConfirm,
+  onCancel,
+}: Props) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8">
         <h2 className="text-lg font-bold text-gray-900 mb-2">{title}</h2>
-        <p className="text-sm text-gray-500 mb-4">
-          Optionally provide a reason. This will be stored against the company record.
-        </p>
+        <p className="text-sm text-gray-600 mb-5">{message}</p>
 
-        <textarea
-          value={reason}
-          onChange={(e) => setReason(e.target.value)}
-          placeholder={placeholder}
-          rows={3}
-          className="w-full border-2 border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-indigo-400 resize-none"
-        />
-
-        <div className="flex gap-3 mt-5 justify-end">
+        <div className="flex gap-3 justify-end">
           <button
             onClick={onCancel}
             className="px-5 py-2 rounded-lg border border-gray-200 text-sm text-gray-600 hover:bg-gray-50"
@@ -34,10 +29,12 @@ export default function ReasonModal({ title, placeholder = "Enter reason…", on
             Cancel
           </button>
           <button
-            onClick={() => onConfirm(reason)}
-            className="px-5 py-2 rounded-lg bg-red-600 text-white text-sm font-semibold hover:bg-red-700"
+            onClick={onConfirm}
+            className={`px-5 py-2 rounded-lg text-sm font-semibold text-white ${
+              danger ? "bg-red-600 hover:bg-red-700" : "bg-indigo-600 hover:bg-indigo-700"
+            }`}
           >
-            Confirm
+            {confirmLabel}
           </button>
         </div>
       </div>

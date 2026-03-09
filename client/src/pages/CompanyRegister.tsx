@@ -1,11 +1,23 @@
-import { useState } from "react";
+import { useState, type ChangeEvent, type FormEvent } from "react";
 import axios from "axios";
 
-export default function CompanyRegister({ onSuccess }) {
+type CompanyRegisterProps = {
+  onSuccess?: () => void;
+};
+
+type FormData = {
+  companyName: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+  companyType: "INDIVIDUAL" | "ALLIANCE" | "COMPANY";
+};
+
+export default function CompanyRegister({ onSuccess }: CompanyRegisterProps) {
   const [isLogin, setIsLogin] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     companyName: "",
     email: "",
     password: "",
@@ -13,16 +25,16 @@ export default function CompanyRegister({ onSuccess }) {
     companyType: "INDIVIDUAL",
   });
 
-  const handleChange = (e) => {
+  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: value
+      [name]: value as FormData[keyof FormData]
     }));
     setError("");
   };
 
-  const handleLogin = async (e) => {
+  const handleLogin = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError("");
     setLoading(true);
@@ -65,7 +77,7 @@ export default function CompanyRegister({ onSuccess }) {
         }
       }
 
-    } catch (err) {
+    } catch (err: any) {
       setError(err.response?.data || "Failed to login");
       console.error("Login error:", err);
     } finally {
@@ -73,7 +85,7 @@ export default function CompanyRegister({ onSuccess }) {
     }
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     
     if (isLogin) {
@@ -135,7 +147,7 @@ export default function CompanyRegister({ onSuccess }) {
         }
       }
 
-    } catch (err) {
+    } catch (err: any) {
       setError(err.response?.data?.error || "Failed to register company");
       console.error("Registration error:", err);
     } finally {

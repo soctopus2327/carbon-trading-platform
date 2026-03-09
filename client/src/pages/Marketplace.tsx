@@ -2,9 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import PageLayout from "../components/layout/PageLayout";
 
-interface MarketplaceProps {}
-
-export default function Marketplace({ }: MarketplaceProps) {
+export default function Marketplace() {
   const [activeTab, setActiveTab] = useState("buy");
   const [trades, setTrades] = useState<any[]>([]);
   const [myTrades, setMyTrades] = useState<any[]>([]);
@@ -38,7 +36,10 @@ export default function Marketplace({ }: MarketplaceProps) {
   const fetchTrades = async () => {
     try {
       setLoading(true);
-      const res = await axios.get("http://localhost:5000/trade");
+      const token = localStorage.getItem("token");
+      const res = await axios.get("http://localhost:5000/trade", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       setTrades(res.data || []);
 
       if (user?.company) {
@@ -144,7 +145,7 @@ export default function Marketplace({ }: MarketplaceProps) {
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      const { transaction, discountApplied, coinsEarned } = response.data;
+      const { coinsEarned } = response.data;
 
       alert("Purchase successful!");
 

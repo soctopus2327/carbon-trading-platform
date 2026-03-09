@@ -23,7 +23,7 @@ const OFFICIAL_SOURCES = [
   "The Hindu",
 ];
 
-export default function News({ onLogout }: { onLogout?: () => void }) {
+export default function News({ onLogout: _onLogout }: { onLogout?: () => void }) {
   const [news, setNews] = useState<NewsArticle[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -69,7 +69,6 @@ export default function News({ onLogout }: { onLogout?: () => void }) {
         title="Live Market News"
         description="Real-time updates on CCTS, BEE policy, and Indian carbon pricing"
         compact
-        onLogout={onLogout}
       >
         <div className="p-6 max-w-5xl mx-auto flex flex-col items-center justify-center h-96">
           <div className="relative">
@@ -89,7 +88,6 @@ export default function News({ onLogout }: { onLogout?: () => void }) {
       title="Live Market News"
       description="Real-time updates on CCTS, BEE policy, and Indian carbon pricing"
       compact
-      onLogout={onLogout}
     >
       <div className="p-6 max-w-5xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-700">
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">

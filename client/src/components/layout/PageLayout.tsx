@@ -1,20 +1,18 @@
-export default function PageLayout({
+import type { ReactNode } from "react";
 
+type PageLayoutProps = {
+  title: string;
+  description?: string;
+  children: ReactNode;
+  compact?: boolean;
+};
+
+export default function PageLayout({
   title,
   description,
   children,
-  onLogout,
   compact = false,
-
-}: {
-
-  title: string;
-  description?: string;
-  children: React.ReactNode;
-  onLogout?: () => void;
-  compact?: boolean;
-
-}) {
+}: PageLayoutProps) {
   let role: string | null = null;
   try {
     const rawUser = localStorage.getItem("user");
@@ -22,42 +20,22 @@ export default function PageLayout({
   } catch {
     role = null;
   }
+
   if (!role) role = localStorage.getItem("role");
 
   const isAdmin = role === "ADMIN";
   const onManagePeoplePage = window.location.pathname === "/manage-people";
 
   return (
-
     <main className="flex-1 bg-gray-50 h-screen flex flex-col min-h-0">
-
-
-      {/* Page Heading */}
-
       <div
         className={`px-6 flex justify-between items-center border-b border-gray-200 bg-white ${
           compact ? "py-5" : "py-8"
         }`}
       >
-
         <div>
-
-          <h1 className="text-3xl font-bold text-gray-900">
-
-            {title}
-
-          </h1>
-
-          {description && (
-
-            <p className="text-gray-600 text-sm mt-2">
-
-              {description}
-
-            </p>
-
-          )}
-
+          <h1 className="text-3xl font-bold text-gray-900">{title}</h1>
+          {description && <p className="text-gray-600 text-sm mt-2">{description}</p>}
         </div>
 
         <div className="flex items-center gap-3">
@@ -82,21 +60,11 @@ export default function PageLayout({
             Alliance Funds
           </button>
         </div>
-
       </div>
-
-
-      {/* Page Content */}
 
       <div className={`px-6 ${compact ? "py-5" : "py-8"} flex-1 overflow-y-auto min-h-0`}>
-
         {children}
-
       </div>
-
-
     </main>
-
   );
-
 }

@@ -1,6 +1,10 @@
 import { useState } from "react";
 
-export default function Header({ onLogout }) {
+type HeaderProps = {
+  onLogout?: () => void;
+};
+
+export default function Header({ onLogout }: HeaderProps) {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const user = JSON.parse(localStorage.getItem("user") || "{}");
 
@@ -31,6 +35,7 @@ export default function Header({ onLogout }) {
           >
             <img
               src="https://i.pravatar.cc/40"
+              alt="User avatar"
               className="w-10 h-10 rounded-full"
             />
             <div className="text-left">

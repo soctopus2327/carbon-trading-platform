@@ -42,6 +42,10 @@ function currentRole() {
   }
 }
 
+function canAccessMarketplace(role: string | null) {
+  return role === "ADMIN" || role === "TRADER";
+}
+
 export default function App() {
   const [page, setPage] = useState("home");
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -81,6 +85,11 @@ export default function App() {
       window.history.replaceState({}, "", "/dashboard");
       return;
     }
+    if (requestedPage === "marketplace" && !canAccessMarketplace(role)) {
+      setPage("dashboard");
+      window.history.replaceState({}, "", "/dashboard");
+      return;
+    }
 
     setPage(requestedPage);
   }, []);
@@ -105,6 +114,11 @@ export default function App() {
       }
 
       if (requestedPage === "manage-people" && role !== "ADMIN") {
+        setPage("dashboard");
+        window.history.replaceState({}, "", "/dashboard");
+        return;
+      }
+      if (requestedPage === "marketplace" && !canAccessMarketplace(role)) {
         setPage("dashboard");
         window.history.replaceState({}, "", "/dashboard");
         return;
@@ -155,13 +169,13 @@ export default function App() {
     <div className="flex h-screen text-black bg-gray-50 overflow-hidden">
       <Sidebar setPage={setPage} page={page} onLogout={handleLogout} />
 
-      {page === "dashboard" && <Dashboard onLogout={handleLogout} />}
+      {page === "dashboard" && <Dashboard />}
       {page === "marketplace" && <Marketplace />}
       {page === "holdings" && <Holdings onLogout={handleLogout} />}
       {page === "reports" && <Reports onLogout={handleLogout} />}
       {page === "news" && <News onLogout={handleLogout} />}
       {page === "ai" && <AIAdvisor onLogout={handleLogout} />}
-      {page === "settings" && <Settings setPage={setPage} onLogout={handleLogout} />}
+      {page === "settings" && <Settings setPage={setPage} />}
       {page === "manage-people" && <ManagePeople setPage={setPage} />}
       {page === "register" && (
         <CompanyRegister

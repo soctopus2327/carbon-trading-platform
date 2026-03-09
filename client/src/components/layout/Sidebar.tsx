@@ -1,5 +1,3 @@
-import { useEffect, useState } from "react";
-
 interface SidebarProps {
   setPage: (page: string) => void;
   page: string;
@@ -7,24 +5,15 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ setPage, page, onLogout }: SidebarProps) {
-  const [role, setRole] = useState<string | null>(null);
-
-  useEffect(() => {
+  let role: string | null = null;
+  try {
     const rawUser = localStorage.getItem("user");
-    if (rawUser) {
-      try {
-        const parsed = JSON.parse(rawUser);
-        if (parsed?.role) {
-          setRole(parsed.role);
-          return;
-        }
-      } catch {
-        // fallback below
-      }
-    }
-
-    setRole(localStorage.getItem("role"));
-  }, []);
+    role = rawUser ? JSON.parse(rawUser)?.role || null : null;
+  } catch {
+    role = null;
+  }
+  if (!role) role = localStorage.getItem("role");
+  const canAccessMarketplace = role === "ADMIN" || role === "TRADER";
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -66,11 +55,13 @@ export default function Sidebar({ setPage, page, onLogout }: SidebarProps) {
             onClick={() => setPage("dashboard")}
           />
 
-          <NavItem
-            label="Marketplace"
-            active={page === "marketplace"}
-            onClick={() => setPage("marketplace")}
-          />
+          {canAccessMarketplace && (
+            <NavItem
+              label="Marketplace"
+              active={page === "marketplace"}
+              onClick={() => setPage("marketplace")}
+            />
+          )}
 
           <NavItem
             label="Holdings & Retire"

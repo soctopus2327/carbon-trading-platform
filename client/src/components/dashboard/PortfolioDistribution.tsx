@@ -1,10 +1,10 @@
-const projects = [
-  { name: "Forestry", value: 45 },
-  { name: "Solar", value: 30 },
-  { name: "Carbon Capture", value: 25 },
-];
+import type { PortfolioProject } from "../../data/dashboard.mock";
 
-export default function PortfolioDistribution() {
+type PortfolioDistributionProps = {
+  projects: PortfolioProject[];
+};
+
+export default function PortfolioDistribution({ projects }: PortfolioDistributionProps) {
   return (
     <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 h-full">
       <h3 className="font-bold text-lg text-gray-900 mb-1">Portfolio Distribution</h3>
