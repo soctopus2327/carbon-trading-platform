@@ -148,10 +148,9 @@ export default function CompanyRegister({ onSuccess }) {
       className="min-h-screen w-full overflow-y-auto bg-cover bg-center bg-no-repeat relative"
       style={{
         backgroundImage:
-          "url('https://png.pngtree.com/background/20211215/original/pngtree-abstract-style-green-texture-background-picture-image_1459046.jpg')"
+          "linear-gradient(rgba(15, 23, 42, 0.45), rgba(15, 23, 42, 0.45)), url('https://png.pngtree.com/background/20211215/original/pngtree-abstract-style-green-texture-background-picture-image_1459046.jpg')"
       }}
     >
-      <div className="absolute inset-0 bg-slate-900/45" />
       <div className="relative min-h-screen p-4 md:p-6 flex items-center justify-center">
         <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-lg p-6 md:p-8 max-w-md w-full border border-emerald-100 my-4">
           <div className="text-center mb-6">
