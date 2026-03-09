@@ -74,7 +74,7 @@ export default function Holdings({ onLogout: _onLogout }: { onLogout?: () => voi
         currentCredits: totalBought - totalSold,
         totalInvested: invested,
         totalGained: gained,
-        totalCoins: user?.coins || 0,
+        totalCoins: user?.points ?? user?.coins ?? 0,
       });
 
       setBuyHistory(buys);

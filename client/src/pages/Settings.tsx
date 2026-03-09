@@ -128,7 +128,7 @@ export default function Settings({ setPage }: SettingsProps) {
 
   if (loading) {
     return (
-      <PageLayout title="Settings">
+      <PageLayout title="Settings" compact>
         <div className="text-center py-10 text-gray-700" role="status" aria-live="polite">
           Loading settings...
         </div>
@@ -138,7 +138,7 @@ export default function Settings({ setPage }: SettingsProps) {
 
   if (!company) {
     return (
-      <PageLayout title="Settings">
+      <PageLayout title="Settings" compact>
         <section
           aria-labelledby="settings-empty-title"
           className="bg-white rounded-xl shadow-md border border-gray-100 p-8 max-w-2xl text-gray-900"
@@ -159,25 +159,19 @@ export default function Settings({ setPage }: SettingsProps) {
   }
 
   return (
-    <PageLayout title="Settings">
-      <main aria-labelledby="company-settings-title" className="w-full max-w-none text-gray-900">
-        <h2 id="company-settings-title" className="text-2xl font-bold mb-2">
-          Company Settings
-        </h2>
-        <p className="text-sm text-gray-700 mb-6">
-          Left: company profile. Right: dashboard data source and upload.
-        </p>
+    <PageLayout title="Settings" compact>
+      <main aria-labelledby="company-settings-title" className="w-full max-w-none text-gray-900 h-[calc(100vh-190px)] min-h-0">
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch w-full">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-stretch w-full h-full min-h-0">
           <section
             aria-labelledby="company-profile-title"
-            className="bg-white rounded-xl shadow-md border border-gray-100 p-6 h-full"
+            className="bg-white rounded-xl shadow-md border border-gray-100 p-4 h-full overflow-y-auto"
           >
             <h3 id="company-profile-title" className="text-lg font-semibold text-gray-900 mb-4">
               Company Profile
             </h3>
 
-            <div className="mb-6">
+            <div className="mb-4">
               <label htmlFor="company-name" className="text-sm font-semibold text-gray-800">
                 Company Name
               </label>
@@ -191,7 +185,7 @@ export default function Settings({ setPage }: SettingsProps) {
               />
             </div>
 
-            <div className="mb-6">
+            <div className="mb-4">
               <label htmlFor="company-type" className="text-sm font-semibold text-gray-800">
                 Company Type
               </label>
@@ -205,7 +199,7 @@ export default function Settings({ setPage }: SettingsProps) {
               />
             </div>
 
-            <div className="mb-6">
+            <div className="mb-4">
               <label htmlFor="credits-balance" className="text-sm font-semibold text-gray-800">
                 Carbon Credits Balance
               </label>
@@ -219,7 +213,7 @@ export default function Settings({ setPage }: SettingsProps) {
               </div>
             </div>
 
-            <div className="mb-6">
+            <div className="mb-4">
               <label htmlFor="active-users" className="text-sm font-semibold text-gray-800">
                 Active Users
               </label>
@@ -233,7 +227,7 @@ export default function Settings({ setPage }: SettingsProps) {
               </div>
             </div>
 
-            <div className="mb-6">
+            <div>
               <p className="text-sm font-semibold text-gray-800">Account Status</p>
               <div className="mt-2">
                 <span className="inline-block bg-green-100 text-green-900 px-4 py-2 rounded-full font-semibold">
@@ -246,13 +240,13 @@ export default function Settings({ setPage }: SettingsProps) {
 
           <aside
             aria-labelledby="dashboard-data-title"
-            className="bg-white rounded-xl shadow-md border border-gray-100 p-6 h-full"
+            className="bg-white rounded-xl shadow-md border border-gray-100 p-4 h-full flex flex-col min-h-0 overflow-y-auto"
           >
             <h3 id="dashboard-data-title" className="text-lg font-semibold text-gray-900 mb-4">
               Dashboard Data
             </h3>
 
-            <div className="mb-6">
+            <div className="mb-4">
               <label htmlFor="dashboard-company" className="text-sm font-semibold text-gray-800">
                 Company Dataset
               </label>
@@ -270,7 +264,7 @@ export default function Settings({ setPage }: SettingsProps) {
               </select>
             </div>
 
-            <div className="mb-6">
+            <div className="mb-4">
               <label htmlFor="dataset-upload" className="text-sm font-semibold text-gray-800">
                 Upload JSON Dataset
               </label>
@@ -295,7 +289,7 @@ export default function Settings({ setPage }: SettingsProps) {
             <div>
               <p className="text-sm font-semibold text-gray-800 mb-2">Current Dataset Preview</p>
               <pre
-                className="text-xs text-gray-900 bg-gray-50 border border-gray-300 rounded-lg p-3 overflow-auto max-h-80"
+                className="text-xs text-gray-900 bg-gray-50 border border-gray-300 rounded-lg p-3 overflow-auto h-[190px] md:h-[220px] lg:h-[260px]"
                 aria-label="Mock dashboard data preview"
                 tabIndex={0}
               >

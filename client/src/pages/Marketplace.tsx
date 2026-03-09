@@ -1,33 +1,52 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import PageLayout from "../components/layout/PageLayout";
 
+type Trade = {
+  _id: string;
+  pricePerCredit: number;
+  quantity: number;
+  remainingQuantity?: number;
+  status?: string;
+  sellerCompany?: {
+    _id?: string;
+    name?: string;
+  };
+};
+
+type UserShape = {
+  company?: string;
+  coins?: number;
+  points?: number;
+};
+
 export default function Marketplace() {
-  const [activeTab, setActiveTab] = useState("buy");
-  const [trades, setTrades] = useState<any[]>([]);
-  const [myTrades, setMyTrades] = useState<any[]>([]);
+  const [activeTab, setActiveTab] = useState<"buy" | "sell">("buy");
+  const [trades, setTrades] = useState<Trade[]>([]);
+  const [myTrades, setMyTrades] = useState<Trade[]>([]);
   const [loading, setLoading] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState({
     pricePerCredit: "",
-    quantity: ""
+    quantity: "",
   });
 
   const [form, setForm] = useState({
     pricePerCredit: "",
-    quantity: ""
+    quantity: "",
   });
 
-  const [user, setUser] = useState<any>(() => {
+  const [user, setUser] = useState<UserShape>(() => {
     if (typeof window !== "undefined") {
       return JSON.parse(localStorage.getItem("user") || "{}");
     }
     return {};
   });
 
-  const [buyingTrade, setBuyingTrade] = useState<any>(null);
+  const [buyingTrade, setBuyingTrade] = useState<Trade | null>(null);
   const [buyQuantity, setBuyQuantity] = useState("");
   const [useDiscount, setUseDiscount] = useState(false);
+  const coinsBalance = user?.points ?? user?.coins ?? 0;
 
   useEffect(() => {
     fetchTrades();
@@ -40,13 +59,16 @@ export default function Marketplace() {
       const res = await axios.get("http://localhost:5000/trade", {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setTrades(res.data || []);
+
+      const allTrades = Array.isArray(res.data) ? res.data : [];
+      setTrades(allTrades);
 
       if (user?.company) {
-        const mine = res.data.filter((t: any) => t.sellerCompany?._id === user.company);
+        const mine = allTrades.filter((trade: Trade) => trade.sellerCompany?._id === user.company);
         setMyTrades(mine);
+      } else {
+        setMyTrades([]);
       }
-
     } catch (err) {
       console.error("Error fetching trades", err);
     } finally {
@@ -66,7 +88,7 @@ export default function Marketplace() {
         "http://localhost:5000/trade",
         {
           pricePerCredit: Number(form.pricePerCredit),
-          quantity: Number(form.quantity)
+          quantity: Number(form.quantity),
         },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -86,7 +108,7 @@ export default function Marketplace() {
     try {
       const token = localStorage.getItem("token");
       await axios.delete(`http://localhost:5000/trade/${id}`, {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
       });
       alert("Trade deleted successfully!");
       fetchTrades();
@@ -96,11 +118,11 @@ export default function Marketplace() {
     }
   };
 
-  const startEdit = (trade: any) => {
+  const startEdit = (trade: Trade) => {
     setEditingId(trade._id);
     setEditForm({
-      pricePerCredit: trade.pricePerCredit.toString(),
-      quantity: trade.quantity.toString()
+      pricePerCredit: String(trade.pricePerCredit),
+      quantity: String(trade.quantity),
     });
   };
 
@@ -114,7 +136,7 @@ export default function Marketplace() {
         `http://localhost:5000/trade/${editingId}`,
         {
           pricePerCredit: Number(editForm.pricePerCredit),
-          quantity: Number(editForm.quantity)
+          quantity: Number(editForm.quantity),
         },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -132,6 +154,8 @@ export default function Marketplace() {
   };
 
   const executePurchase = async () => {
+    if (!buyingTrade) return;
+
     if (!buyQuantity || Number(buyQuantity) <= 0) {
       alert("Enter a valid quantity");
       return;
@@ -149,288 +173,234 @@ export default function Marketplace() {
 
       alert("Purchase successful!");
 
-      // Update local user coins and points
-      const updatedCoins = (user.coins || 0) - (useDiscount ? 100 : 0) + coinsEarned;
-      const updatedPoints = (user.points || 0) + Number(buyQuantity);
-      const updatedUser = { ...user, coins: updatedCoins, points: updatedPoints };
+      const updatedPoints = coinsBalance - (useDiscount ? 100 : 0) + coinsEarned;
+      const updatedUser = { ...user, points: updatedPoints, coins: updatedPoints };
       setUser(updatedUser);
       localStorage.setItem("user", JSON.stringify(updatedUser));
 
-      // Reset modal
       setBuyingTrade(null);
       setBuyQuantity("");
       setUseDiscount(false);
 
       fetchTrades();
-
     } catch (err: any) {
-      const errorMessage =
-        err.response?.data?.message ||
-        err.response?.data?.error ||
-        "Transaction failed";
+      const errorMessage = err.response?.data?.message || err.response?.data?.error || "Transaction failed";
       alert(errorMessage);
     }
   };
 
+  const summary = useMemo(() => {
+    const availableListings = trades.filter((trade) => (trade.remainingQuantity ?? trade.quantity) > 0).length;
+    const myCreditsListed = myTrades.reduce((sum, trade) => sum + (trade.remainingQuantity ?? trade.quantity), 0);
+
+    return {
+      availableListings,
+      myListings: myTrades.length,
+      myCreditsListed,
+      myCoins: coinsBalance,
+    };
+  }, [trades, myTrades, coinsBalance]);
+
   return (
-    <PageLayout title="Marketplace" description="Buy or Sell carbon credits easily.">
-      <div className="space-y-6">
-        {/* Tabs */}
-        <div className="flex gap-3">
-          <button
-            onClick={() => setActiveTab("buy")}
-            className={`px-6 py-3 rounded-lg font-semibold transition ${activeTab === "buy"
-              ? "bg-green-600 text-white shadow-lg"
-              : "bg-white text-gray-700 border-2 border-gray-200 hover:border-green-300"
-              }`}
-          >
-            Buy Credits
-          </button>
+    <PageLayout title="Marketplace" description="Trade carbon credits with live listings and controlled execution." compact>
+      <div className="space-y-5 h-full">
+        <section className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <MetricCard label="Open Listings" value={String(summary.availableListings)} />
+          <MetricCard label="My Listings" value={String(summary.myListings)} />
+          <MetricCard label="Credits Listed" value={String(summary.myCreditsListed)} />
+          <MetricCard label="My Coins" value={String(summary.myCoins)} />
+        </section>
 
-          <button
-            onClick={() => setActiveTab("sell")}
-            className={`px-6 py-3 rounded-lg font-semibold transition ${activeTab === "sell"
-              ? "bg-green-600 text-white shadow-lg"
-              : "bg-white text-gray-700 border-2 border-gray-200 hover:border-green-300"
-              }`}
-          >
-            Sell Credits
-          </button>
-        </div>
+        <section className="bg-white border border-gray-200 rounded-2xl p-2 inline-flex gap-2 shadow-sm">
+          <TabButton label="Buy Credits" active={activeTab === "buy"} onClick={() => setActiveTab("buy")} />
+          <TabButton label="Sell Credits" active={activeTab === "sell"} onClick={() => setActiveTab("sell")} />
+        </section>
 
-        {/* Loading */}
         {loading && (
-          <div className="text-center py-8">
-            <p className="text-gray-500">Loading trades...</p>
-          </div>
+          <div className="bg-white rounded-2xl border border-gray-200 p-10 text-center text-gray-500">Loading marketplace...</div>
         )}
 
-        {/* BUY SECTION */}
         {activeTab === "buy" && !loading && (
-          <>
-            {trades.length === 0 ? (
-              <div className="bg-white rounded-xl p-12 text-center border-2 border-dashed border-gray-300">
-                <p className="text-gray-500 text-lg">No trades available yet.</p>
+          <section className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
+            <div className="flex items-end justify-between mb-4">
+              <div>
+                <h2 className="text-xl font-bold text-gray-900">Available Listings</h2>
+                <p className="text-sm text-gray-600">Select a listing and execute a credit purchase.</p>
               </div>
+            </div>
+
+            {trades.length === 0 ? (
+              <EmptyBlock text="No trades available yet." />
             ) : (
-              <div className="grid md:grid-cols-3 sm:grid-cols-2 grid-cols-1 gap-6">
-                {trades.map((trade) => (
-                  <div
-                    key={trade._id}
-                    className="bg-white p-6 rounded-xl shadow-md hover:shadow-xl transition border border-gray-100"
-                  >
-                    <div className="text-sm font-semibold text-green-600 mb-2 bg-green-50 px-3 py-1 rounded-full inline-block">
-                      {trade.status || "Active"}
-                    </div>
+              <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-4">
+                {trades.map((trade) => {
+                  const available = trade.remainingQuantity ?? trade.quantity;
+                  return (
+                    <article key={trade._id} className="rounded-xl border border-gray-200 p-4 hover:shadow-md transition bg-gradient-to-b from-white to-emerald-50/30">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-xs font-bold px-2 py-1 rounded-full bg-emerald-100 text-emerald-700 border border-emerald-200">
+                          {trade.status || "ACTIVE"}
+                        </span>
+                        <span className="text-xs text-gray-500">#{trade._id.slice(-6)}</span>
+                      </div>
 
-                    <h3 className="font-bold text-lg mb-2 text-gray-900">
-                      {trade.sellerCompany?.name || "Company"}
-                    </h3>
+                      <h3 className="font-semibold text-gray-900">{trade.sellerCompany?.name || "Company"}</h3>
+                      <p className="text-2xl font-bold text-emerald-700 mt-2">INR {trade.pricePerCredit}/credit</p>
+                      <p className="text-sm text-gray-600 mt-1">{available} credits available</p>
 
-                    <p className="text-2xl font-bold text-green-600 mb-1">
-                      ₹{trade.pricePerCredit}/credit
-                    </p>
-
-                    <p className="text-gray-600 mb-4">
-                      {trade.remainingQuantity ?? trade.quantity} credits available
-                    </p>
-
-                    <button
-                      onClick={() => setBuyingTrade(trade)}
-                      className="w-full bg-green-600 text-white py-2 rounded-lg"
-                    >
-                      Buy Credits
-                    </button>
-                  </div>
-                ))}
+                      <button
+                        onClick={() => setBuyingTrade(trade)}
+                        className="mt-4 w-full bg-emerald-600 text-white py-2 rounded-lg hover:bg-emerald-700 transition font-semibold text-sm"
+                      >
+                        Buy Credits
+                      </button>
+                    </article>
+                  );
+                })}
               </div>
             )}
-          </>
+          </section>
         )}
 
-        {/* SELL SECTION */}
         {activeTab === "sell" && !loading && (
-          <>
-            {/* Add Trade */}
-            <div className="bg-white p-8 rounded-xl shadow-md border border-gray-100 mb-8 max-w-2xl">
-              <h2 className="text-2xl font-bold mb-6 text-gray-900">Add New Trade</h2>
+          <section className="grid xl:grid-cols-[1fr_1.6fr] gap-4">
+            <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
+              <h2 className="text-xl font-bold text-gray-900 mb-4">Create Listing</h2>
 
               <form onSubmit={addTrade} className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Price Per Credit (₹)
-                    </label>
-                    <input
-                      type="number"
-                      name="pricePerCredit"
-                      placeholder="Enter price"
-                      value={form.pricePerCredit}
-                      onChange={handleChange}
-                      required
-                      className="w-full border-2 border-gray-200 px-4 py-2 rounded-lg focus:outline-none focus:border-green-500 transition"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Quantity (Credits)
-                    </label>
-                    <input
-                      type="number"
-                      name="quantity"
-                      placeholder="Enter quantity"
-                      value={form.quantity}
-                      onChange={handleChange}
-                      required
-                      className="w-full border-2 border-gray-200 px-4 py-2 rounded-lg focus:outline-none focus:border-green-500 transition"
-                    />
-                  </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1">Price Per Credit (INR)</label>
+                  <input
+                    type="number"
+                    name="pricePerCredit"
+                    value={form.pricePerCredit}
+                    onChange={handleChange}
+                    placeholder="Enter price"
+                    required
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-emerald-300"
+                  />
                 </div>
 
-                <button
-                  type="submit"
-                  className="w-full bg-gradient-to-r from-green-600 to-green-700 text-white px-6 py-3 rounded-lg hover:from-green-700 hover:to-green-800 transition font-semibold shadow-md"
-                >
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1">Quantity</label>
+                  <input
+                    type="number"
+                    name="quantity"
+                    value={form.quantity}
+                    onChange={handleChange}
+                    placeholder="Enter quantity"
+                    required
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-emerald-300"
+                  />
+                </div>
+
+                <button type="submit" className="w-full bg-emerald-600 text-white py-2.5 rounded-lg hover:bg-emerald-700 transition font-semibold">
                   Create Trade
                 </button>
               </form>
             </div>
 
-            {/* My Trades */}
-            <div>
-              <h2 className="text-2xl font-bold mb-6 text-gray-900">Your Active Trades</h2>
+            <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
+              <h2 className="text-xl font-bold text-gray-900 mb-4">My Active Listings</h2>
+
               {myTrades.length === 0 ? (
-                <div className="bg-white rounded-xl p-12 text-center border-2 border-dashed border-gray-300">
-                  <p className="text-gray-500 text-lg">You haven't added any trades yet.</p>
-                </div>
+                <EmptyBlock text="You have not created any listings yet." />
               ) : (
-                <div className="grid md:grid-cols-3 sm:grid-cols-2 grid-cols-1 gap-6">
+                <div className="space-y-3 max-h-[560px] overflow-auto pr-1">
                   {myTrades.map((trade) => (
-                    <div
-                      key={trade._id}
-                      className="bg-white p-6 rounded-xl shadow-md border border-gray-100 hover:shadow-lg transition"
-                    >
+                    <div key={trade._id} className="rounded-xl border border-gray-200 p-4">
                       {editingId === trade._id ? (
-                        <form onSubmit={updateTrade} className="space-y-4">
-                          <div>
-                            <label className="text-sm font-semibold text-gray-700">Price Per Credit</label>
-                            <input
-                              type="number"
-                              value={editForm.pricePerCredit}
-                              onChange={(e) => setEditForm({ ...editForm, pricePerCredit: e.target.value })}
-                              className="w-full border-2 border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:border-green-500"
-                              required
-                            />
-                          </div>
-                          <div>
-                            <label className="text-sm font-semibold text-gray-700">Quantity</label>
-                            <input
-                              type="number"
-                              value={editForm.quantity}
-                              onChange={(e) => setEditForm({ ...editForm, quantity: e.target.value })}
-                              className="w-full border-2 border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:border-green-500"
-                              required
-                            />
-                          </div>
-                          <div className="flex gap-2">
-                            <button
-                              type="submit"
-                              className="flex-1 bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition font-semibold text-sm"
-                            >
-                              Save
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => setEditingId(null)}
-                              className="flex-1 bg-gray-400 text-white py-2 rounded-lg hover:bg-gray-500 transition font-semibold text-sm"
-                            >
-                              Cancel
-                            </button>
-                          </div>
+                        <form onSubmit={updateTrade} className="grid md:grid-cols-2 gap-3">
+                          <input
+                            type="number"
+                            value={editForm.pricePerCredit}
+                            onChange={(e) => setEditForm({ ...editForm, pricePerCredit: e.target.value })}
+                            className="border border-gray-300 rounded-lg px-3 py-2"
+                            required
+                          />
+                          <input
+                            type="number"
+                            value={editForm.quantity}
+                            onChange={(e) => setEditForm({ ...editForm, quantity: e.target.value })}
+                            className="border border-gray-300 rounded-lg px-3 py-2"
+                            required
+                          />
+                          <button type="submit" className="bg-emerald-600 text-white py-2 rounded-lg text-sm font-semibold hover:bg-emerald-700">
+                            Save
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setEditingId(null)}
+                            className="bg-gray-200 text-gray-800 py-2 rounded-lg text-sm font-semibold hover:bg-gray-300"
+                          >
+                            Cancel
+                          </button>
                         </form>
                       ) : (
-                        <>
-                          <h3 className="text-2xl font-bold text-green-600 mb-1">
-                            ₹{trade.pricePerCredit}/credit
-                          </h3>
-
-                          <p className="text-gray-600 mb-4">
-                            {trade.remainingQuantity || trade.quantity} credits available
-                          </p>
-
+                        <div className="flex flex-wrap items-center justify-between gap-3">
+                          <div>
+                            <p className="text-lg font-bold text-emerald-700">INR {trade.pricePerCredit}/credit</p>
+                            <p className="text-sm text-gray-600">{trade.remainingQuantity || trade.quantity} credits available</p>
+                          </div>
                           <div className="flex gap-2">
                             <button
                               onClick={() => startEdit(trade)}
-                              className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition font-semibold text-sm"
+                              className="px-3 py-2 rounded-lg text-sm font-semibold bg-blue-600 text-white hover:bg-blue-700"
                             >
                               Edit
                             </button>
                             <button
                               onClick={() => deleteTrade(trade._id)}
-                              className="flex-1 bg-red-600 text-white py-2 rounded-lg hover:bg-red-700 transition font-semibold text-sm"
+                              className="px-3 py-2 rounded-lg text-sm font-semibold bg-red-600 text-white hover:bg-red-700"
                             >
                               Delete
                             </button>
                           </div>
-                        </>
+                        </div>
                       )}
                     </div>
                   ))}
                 </div>
               )}
             </div>
-          </>
+          </section>
         )}
       </div>
 
-      {/* BUY MODAL */}
       {buyingTrade && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center">
-          <div className="bg-white p-6 rounded-lg w-96">
-            <h2 className="text-lg font-bold mb-4">Buy from {buyingTrade.sellerCompany?.name}</h2>
+        <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
+          <div className="w-full max-w-md bg-white rounded-2xl border border-gray-200 shadow-xl p-6">
+            <h2 className="text-lg font-bold text-gray-900">Purchase Credits</h2>
+            <p className="text-sm text-gray-600 mt-1 mb-4">Seller: {buyingTrade.sellerCompany?.name || "Company"}</p>
 
-            <p className="text-sm text-gray-600 mb-2">Your Coins: {user?.coins ?? 0}</p>
+            <p className="text-sm text-gray-600 mb-2">Your coins: {coinsBalance}</p>
 
             <input
               type="number"
               placeholder="Enter quantity"
               value={buyQuantity}
               onChange={(e) => setBuyQuantity(e.target.value)}
-              className="w-full border p-2 rounded mb-2"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2.5 mb-3"
             />
 
-            {/* Show discount only if coins >= 100 */}
-            {user?.coins >= 100 && (
-              <label className="flex items-center gap-2 mb-4">
-                <input
-                  type="checkbox"
-                  checked={useDiscount}
-                  onChange={(e) => setUseDiscount(e.target.checked)}
-                />
-                <span className="text-sm text-gray-700">Use 100 coins for ₹1000 discount</span>
+            {coinsBalance >= 100 ? (
+              <label className="flex items-center gap-2 mb-3 text-sm text-gray-700">
+                <input type="checkbox" checked={useDiscount} onChange={(e) => setUseDiscount(e.target.checked)} />
+                Use 100 coins for INR 1000 discount
               </label>
-            )}
+            ) : null}
 
-            <p className="mb-4 font-semibold">
-              Total: ₹
-              {Math.max(
-                buyingTrade.pricePerCredit * Number(buyQuantity) - (useDiscount ? 1000 : 0),
-                0
-              )}
+            <p className="font-semibold text-gray-900 mb-5">
+              Total: INR {Math.max(buyingTrade.pricePerCredit * Number(buyQuantity || 0) - (useDiscount ? 1000 : 0), 0)}
             </p>
 
             <div className="flex gap-2">
-              <button
-                onClick={executePurchase}
-                className="flex-1 bg-green-600 text-white py-2 rounded"
-              >
+              <button onClick={executePurchase} className="flex-1 bg-emerald-600 text-white py-2 rounded-lg hover:bg-emerald-700 font-semibold">
                 Confirm
               </button>
-
               <button
                 onClick={() => setBuyingTrade(null)}
-                className="flex-1 bg-gray-400 text-white py-2 rounded"
+                className="flex-1 bg-gray-200 text-gray-800 py-2 rounded-lg hover:bg-gray-300 font-semibold"
               >
                 Cancel
               </button>
@@ -439,5 +409,35 @@ export default function Marketplace() {
         </div>
       )}
     </PageLayout>
+  );
+}
+
+function MetricCard({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
+      <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">{label}</p>
+      <p className="text-2xl font-bold text-gray-900 mt-2">{value}</p>
+    </div>
+  );
+}
+
+function TabButton({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`px-5 py-2.5 rounded-xl text-sm font-semibold transition ${
+        active ? "bg-emerald-600 text-white shadow" : "text-gray-700 hover:bg-gray-100"
+      }`}
+    >
+      {label}
+    </button>
+  );
+}
+
+function EmptyBlock({ text }: { text: string }) {
+  return (
+    <div className="rounded-xl border-2 border-dashed border-gray-300 p-10 text-center text-gray-500">
+      {text}
+    </div>
   );
 }
