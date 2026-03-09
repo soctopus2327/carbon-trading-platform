@@ -6,6 +6,15 @@ const { COMPANY_STATUS } = require("../models/enums");
 exports.createTrade = async (req, res) => {
   try {
     const { pricePerCredit, quantity } = req.body;
+    const parsedPrice = Number(pricePerCredit);
+    const parsedQuantity = Number(quantity);
+
+    if (!Number.isFinite(parsedPrice) || parsedPrice <= 0) {
+      return res.status(400).json({ message: "Price per credit must be a positive number" });
+    }
+    if (!Number.isFinite(parsedQuantity) || parsedQuantity <= 0) {
+      return res.status(400).json({ message: "Quantity must be a positive number" });
+    }
 
     // Get seller company from DB
     const company = await Company.findById(req.user.company);
@@ -23,9 +32,9 @@ exports.createTrade = async (req, res) => {
 
     const trade = await TradeListing.create({
       sellerCompany: req.user.company,
-      pricePerCredit,
-      quantity,
-      remainingQuantity: quantity
+      pricePerCredit: parsedPrice,
+      quantity: parsedQuantity,
+      remainingQuantity: parsedQuantity
     });
 
     res.status(201).json(trade);
@@ -56,7 +65,6 @@ exports.getAllTrades = async (req, res) => {
 exports.updateTrade = async (req, res) => {
   try {
     const trade = await TradeListing.findById(req.params.id);
-    console.log("Found trade for update:", req.body, trade);
     if (!trade)
       return res.status(404).json({ message: "Trade not found" });
 
@@ -64,9 +72,23 @@ exports.updateTrade = async (req, res) => {
     if (trade.sellerCompany.toString() !== req.user.company.toString())
       return res.status(403).json({ message: "You can only update your own trades" });
 
+    const nextPrice = Number(req.body.pricePerCredit);
+    const nextQuantity = Number(req.body.quantity);
+
+    if (!Number.isFinite(nextPrice) || nextPrice <= 0) {
+      return res.status(400).json({ message: "Price per credit must be a positive number" });
+    }
+    if (!Number.isFinite(nextQuantity) || nextQuantity <= 0) {
+      return res.status(400).json({ message: "Quantity must be a positive number" });
+    }
+
     const updatedTrade = await TradeListing.findByIdAndUpdate(
       req.params.id,
-      req.body,
+      {
+        pricePerCredit: nextPrice,
+        quantity: nextQuantity,
+        remainingQuantity: nextQuantity
+      },
       { new: true }
     ).populate("sellerCompany");
 

@@ -340,7 +340,7 @@ export default function Marketplace() {
                         <div className="flex flex-wrap items-center justify-between gap-3">
                           <div>
                             <p className="text-lg font-bold text-emerald-700">INR {trade.pricePerCredit}/credit</p>
-                            <p className="text-sm text-gray-600">{trade.remainingQuantity || trade.quantity} credits available</p>
+                            <p className="text-sm text-gray-600">{ trade.quantity} credits available</p>
                           </div>
                           <div className="flex gap-2">
                             <button
