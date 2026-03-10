@@ -1,0 +1,94 @@
+{
+  "Vaishnavi Limited": {
+    "company": "Vaishnavi Limited",
+    "stats": [
+      {
+        "title": "Total Holdings",
+        "value": "13,400 t",
+        "delta": "6.4%",
+        "positive": true,
+        "subtitle": "Value: $149,700"
+      },
+      {
+        "title": "Net Emissions (YTD)",
+        "value": "4,050 t",
+        "delta": "2.3%",
+        "positive": false,
+        "subtitle": "Target: 3,900 t"
+      },
+      {
+        "title": "Credit Price Index",
+        "value": "$11.95",
+        "delta": "0.7%",
+        "positive": true,
+        "subtitle": "Regional benchmark"
+      },
+      {
+        "title": "Offset Ratio",
+        "value": "74%",
+        "delta": "3%",
+        "positive": true,
+        "subtitle": "Of total emissions"
+      }
+    ],
+    "emissionsTrend": [
+      { "month": "Jan", "emissions": 4600, "offsets": 3200 },
+      { "month": "Feb", "emissions": 4450, "offsets": 3380 },
+      { "month": "Mar", "emissions": 4300, "offsets": 3510 },
+      { "month": "Apr", "emissions": 4200, "offsets": 3650 },
+      { "month": "May", "emissions": 4100, "offsets": 3780 },
+      { "month": "Jun", "emissions": 4050, "offsets": 3920 }
+    ],
+    "portfolioDistribution": [
+      { "name": "Solar", "value": 34 },
+      { "name": "Forestry", "value": 41 },
+      { "name": "Carbon Capture", "value": 25 }
+    ]
+  },
+  "Nimbus Textiles": {
+    "company": "Nimbus Textiles",
+    "stats": [
+      {
+        "title": "Total Holdings",
+        "value": "8,900 t",
+        "delta": "4.9%",
+        "positive": true,
+        "subtitle": "Value: $99,100"
+      },
+      {
+        "title": "Net Emissions (YTD)",
+        "value": "3,320 t",
+        "delta": "1.1%",
+        "positive": false,
+        "subtitle": "Target: 3,100 t"
+      },
+      {
+        "title": "Credit Price Index",
+        "value": "$11.35",
+        "delta": "0.3%",
+        "positive": true,
+        "subtitle": "Textile sector avg"
+      },
+      {
+        "title": "Offset Ratio",
+        "value": "69%",
+        "delta": "2%",
+        "positive": true,
+        "subtitle": "Of total emissions"
+      }
+    ],
+    "emissionsTrend": [
+      { "month": "Jan", "emissions": 3580, "offsets": 2250 },
+      { "month": "Feb", "emissions": 3490, "offsets": 2390 },
+      { "month": "Mar", "emissions": 3410, "offsets": 2480 },
+      { "month": "Apr", "emissions": 3360, "offsets": 2600 },
+      { "month": "May", "emissions": 3320, "offsets": 2720 },
+      { "month": "Jun", "emissions": 3280, "offsets": 2840 }
+    ],
+    "portfolioDistribution": [
+      { "name": "Wind", "value": 29 },
+      { "name": "Biochar", "value": 33 },
+      { "name": "Forestry", "value": 38 }
+    ]
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "company": "Acme Energy",
+  "stats": [
+    { "title": "Total Holdings", "value": "10,200 t", "delta": "3.1%", "positive": true, "subtitle": "Value: $120,000" },
+    { "title": "Net Emissions (YTD)", "value": "3,200 t", "delta": "1.2%", "positive": false, "subtitle": "Target: 3,000 t" },
+    { "title": "Credit Price Index", "value": "$11.80", "delta": "0.9%", "positive": true, "subtitle": "Market average" },
+    { "title": "Offset Ratio", "value": "70%", "delta": "2%", "positive": true, "subtitle": "Of total emissions" }
+  ],
+  "emissionsTrend": [
+    { "month": "Jan", "emissions": 4200, "offsets": 3000 },
+    { "month": "Feb", "emissions": 4100, "offsets": 3200 }
+  ],
+  "portfolioDistribution": [
+    { "name": "Solar", "value": 40 },
+    { "name": "Forestry", "value": 35 },
+    { "name": "Carbon Capture", "value": 25 }
+  ]
+}
