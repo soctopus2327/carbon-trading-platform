@@ -17,19 +17,22 @@ interface StatCardProps {
   label: string;
   value: number | string;
   color: string;
-  icon: string;
 }
 
-function StatCard({ label, value, color, icon }: StatCardProps) {
+function StatCard({ label, value, color }: StatCardProps) {
   return (
-    <div className={`bg-white rounded-xl p-5 border-l-4 ${color} shadow-sm`}>
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{label}</p>
-          <p className="text-3xl font-bold text-gray-900 mt-1">{value}</p>
-        </div>
-        <span className="text-3xl opacity-60">{icon}</span>
-      </div>
+    <div
+      className={`bg-white rounded-xl p-6 border ${color} shadow-sm hover:shadow-md transition duration-200`}
+    >
+      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+        {label}
+      </p>
+
+      <p className="text-3xl font-bold text-gray-900 mt-2">
+        {value}
+      </p>
+
+      <div className="mt-4 h-1 w-12 bg-green-600 rounded"></div>
     </div>
   );
 }
@@ -46,44 +49,68 @@ export default function AdminDashboard() {
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <div className="p-8 text-gray-500 animate-pulse">Loading dashboard…</div>;
-  if (error) return <div className="p-8 text-red-500">{error}</div>;
+  if (loading)
+    return (
+      <div className="p-8 text-gray-500 animate-pulse">
+        Loading dashboard...
+      </div>
+    );
+
+  if (error)
+    return (
+      <div className="p-8 text-red-500">
+        {error}
+      </div>
+    );
+
   if (!stats) return null;
 
   return (
-    <div className="p-8 space-y-8">
+    <div className="p-8 space-y-10 bg-gray-50 min-h-screen">
+
+      {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Platform Overview</h1>
-        <p className="text-gray-500 text-sm mt-1">Real-time stats across all companies and users</p>
+        <h1 className="text-3xl font-semibold text-gray-900">
+          Platform Overview
+        </h1>
+        <p className="text-gray-500 text-sm mt-1">
+          Real-time statistics across the carbon trading platform
+        </p>
       </div>
 
-      {/* Row 1: Companies */}
+      {/* Companies Section */}
       <div>
-        <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">Companies</h2>
-        <div className="grid grid-cols-2 xl:grid-cols-5 gap-4">
-          <StatCard label="Total" value={stats.totalCompanies} color="border-indigo-500" icon="🏢" />
-          <StatCard label="Pending" value={stats.pendingCompanies} color="border-yellow-400" icon="⏳" />
-          <StatCard label="Active" value={stats.activeCompanies} color="border-green-500" icon="✅" />
-          <StatCard label="Rejected" value={stats.rejectedCompanies} color="border-red-400" icon="❌" />
-          <StatCard label="Blocked" value={stats.blockedCompanies} color="border-gray-400" icon="🚫" />
+        <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">
+          Companies
+        </h2>
+
+        <div className="grid grid-cols-2 xl:grid-cols-5 gap-5">
+          <StatCard label="Total Companies" value={stats.totalCompanies} color="border-green-200" />
+          <StatCard label="Pending Approval" value={stats.pendingCompanies} color="border-yellow-200" />
+          <StatCard label="Active Companies" value={stats.activeCompanies} color="border-green-300" />
+          <StatCard label="Rejected Companies" value={stats.rejectedCompanies} color="border-red-200" />
+          <StatCard label="Blocked Companies" value={stats.blockedCompanies} color="border-gray-200" />
         </div>
       </div>
 
-      {/* Row 2: Platform */}
+      {/* Platform Activity */}
       <div>
-        <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">Platform Activity</h2>
-        <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
-          <StatCard label="Total Users" value={stats.totalUsers} color="border-blue-500" icon="👥" />
-          <StatCard label="Trade Listings" value={stats.totalTrades} color="border-purple-500" icon="📋" />
-          <StatCard label="Transactions" value={stats.totalTransactions} color="border-teal-500" icon="💱" />
+        <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">
+          Platform Activity
+        </h2>
+
+        <div className="grid grid-cols-2 xl:grid-cols-4 gap-5">
+          <StatCard label="Total Users" value={stats.totalUsers} color="border-green-200" />
+          <StatCard label="Trade Listings" value={stats.totalTrades} color="border-green-200" />
+          <StatCard label="Transactions" value={stats.totalTransactions} color="border-green-200" />
           <StatCard
             label="Carbon Credits"
             value={stats.totalCarbonCredits.toLocaleString()}
-            color="border-green-600"
-            icon="🌿"
+            color="border-green-300"
           />
         </div>
       </div>
+
     </div>
   );
 }

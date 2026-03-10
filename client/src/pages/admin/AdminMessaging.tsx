@@ -1,5 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import axios from "axios";
+import { 
+  Mail, Send, Inbox, PlusCircle, Trash2, Building2, 
+  CheckCircle2, AlertCircle, Loader2, Search, X, Users, User, Globe
+} from "lucide-react";
 
 const API = "http://localhost:5000/messages";
 
@@ -42,8 +46,11 @@ export default function AdminMessaging() {
   const [loading, setLoading] = useState(true);
   const [selectedSent, setSelectedSent] = useState<SentMessage | null>(null);
   const [selectedInbox, setSelectedInbox] = useState<InboxMessage | null>(null);
+  
+  // Search States
+  const [searchQuery, setSearchQuery] = useState("");
+  const [companySearch, setCompanySearch] = useState("");
 
-  // Compose state
   const [subject, setSubject] = useState("");
   const [body, setBody] = useState("");
   const [broadcastType, setBroadcastType] = useState<"BROADCAST" | "MULTICAST" | "UNICAST">("BROADCAST");
@@ -63,7 +70,9 @@ export default function AdminMessaging() {
       setInbox(inboxRes.data.messages || []);
       setUnreadCount(inboxRes.data.unreadCount || 0);
       setCompanies(companiesRes.data || []);
-    } catch { /* silent */ }
+    } catch (err) {
+      console.error("Fetch error", err);
+    }
   };
 
   useEffect(() => {
@@ -71,13 +80,34 @@ export default function AdminMessaging() {
     fetchData().finally(() => setLoading(false));
   }, []);
 
+  // Filter Logic for Inbox/Sent
+  const filteredInbox = useMemo(() => {
+    return inbox.filter(msg => 
+      msg.subject.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      msg.senderCompany?.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [inbox, searchQuery]);
+
+  const filteredSent = useMemo(() => {
+    return sent.filter(msg => 
+      msg.subject.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [sent, searchQuery]);
+
+  // Filter Logic for Company Selection
+  const filteredCompanies = useMemo(() => {
+    return companies.filter(c => 
+      c.name.toLowerCase().includes(companySearch.toLowerCase())
+    );
+  }, [companies, companySearch]);
+
   const handleSend = async () => {
     if (!subject.trim() || !body.trim()) {
       setSendError("Subject and message body are required.");
       return;
     }
     if ((broadcastType === "UNICAST" || broadcastType === "MULTICAST") && selectedCompanies.length === 0) {
-      setSendError("Please select at least one company.");
+      setSendError("Please select at least one recipient.");
       return;
     }
     setSending(true);
@@ -93,8 +123,12 @@ export default function AdminMessaging() {
       setBody("");
       setSelectedCompanies([]);
       setBroadcastType("BROADCAST");
+      setCompanySearch("");
       await fetchData();
-      setTimeout(() => { setSendSuccess(false); setView("sent"); }, 1500);
+      setTimeout(() => {
+        setSendSuccess(false);
+        setView("sent");
+      }, 1200);
     } catch (err: any) {
       setSendError(err.response?.data?.message || "Failed to send.");
     } finally {
@@ -107,18 +141,19 @@ export default function AdminMessaging() {
     if (!msg.adminRead) {
       try {
         await axios.put(`${API}/${msg._id}/admin-read`, {}, { headers: getHeaders() });
-        setInbox(prev => prev.map(m => m._id === msg._id ? { ...m, adminRead: true } : m));
+        setInbox(prev => prev.map(m => (m._id === msg._id ? { ...m, adminRead: true } : m)));
         setUnreadCount(prev => Math.max(0, prev - 1));
-      } catch { /* silent */ }
+      } catch {}
     }
   };
 
   const deleteMsg = async (id: string) => {
+    if (!window.confirm("Delete this message?")) return;
     try {
       await axios.delete(`${API}/${id}`, { headers: getHeaders() });
       setSent(prev => prev.filter(m => m._id !== id));
       setSelectedSent(null);
-    } catch { /* silent */ }
+    } catch {}
   };
 
   const toggleCompany = (id: string) => {
@@ -132,341 +167,292 @@ export default function AdminMessaging() {
   };
 
   const formatDate = (d: string) =>
-    new Date(d).toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
+    new Date(d).toLocaleString([], {
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit"
+    });
 
-  const broadcastLabel: Record<string, { color: string; label: string }> = {
-    BROADCAST: { color: "bg-blue-100 text-blue-700", label: "All Companies" },
-    MULTICAST: { color: "bg-purple-100 text-purple-700", label: "Multiple" },
-    UNICAST: { color: "bg-green-100 text-green-700", label: "Single" }
+  const typeConfig: Record<string, { color: string; label: string; icon: any }> = {
+    BROADCAST: { color: "bg-emerald-100 text-emerald-700", label: "All Companies", icon: Globe },
+    MULTICAST: { color: "bg-blue-100 text-blue-700", label: "Group", icon: Users },
+    UNICAST: { color: "bg-purple-100 text-purple-700", label: "Individual", icon: User }
   };
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-full">
-        <div className="flex flex-col items-center gap-3">
-          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-500" />
-          <p className="text-slate-400 text-sm animate-pulse">Loading messages…</p>
-        </div>
+      <div className="flex flex-col items-center justify-center h-screen bg-slate-50">
+        <Loader2 className="h-10 w-10 text-emerald-600 animate-spin mb-4" />
+        <p className="text-slate-500 font-medium">Syncing communications...</p>
       </div>
     );
   }
 
   return (
-    <div className="flex h-full overflow-hidden bg-gray-50">
-
-      {/* ── LEFT PANEL ── */}
-      <div className="w-80 shrink-0 flex flex-col border-r border-slate-200 bg-white h-full">
-
-        {/* Header */}
-        <div className="px-5 py-4 border-b border-slate-100">
-          <h2 className="text-lg font-bold text-slate-800">Messaging</h2>
-          <p className="text-xs text-slate-400 mt-0.5">Communicate with companies</p>
+    <div className="flex h-screen overflow-hidden bg-[#F8FAFC]">
+      {/* SIDEBAR */}
+      <div className="w-80 shrink-0 flex flex-col bg-white border-r border-slate-200">
+        <div className="p-6">
+          <div className="flex items-center gap-2 mb-1">
+            <div className="h-8 w-8 bg-emerald-600 rounded-lg flex items-center justify-center">
+              <Mail className="text-white h-5 w-5" />
+            </div>
+            <h2 className="text-xl font-bold text-slate-900 tracking-tight">Portal Hub</h2>
+          </div>
+          <p className="text-[11px] uppercase tracking-wider font-bold text-slate-400">Communication Center</p>
         </div>
 
-        {/* Nav */}
-        <div className="flex flex-col gap-1 p-3 border-b border-slate-100">
+        <nav className="px-4 space-y-1 mb-4">
           {[
-            { key: "compose" as View, icon: "✏️", label: "Compose" },
-            {
-              key: "inbox" as View, icon: "📥", label: "Inbox",
-              badge: unreadCount > 0 ? unreadCount : null
-            },
-            { key: "sent" as View, icon: "📤", label: "Sent" }
+            { key: "compose" as View, label: "Compose", icon: PlusCircle },
+            { key: "inbox" as View, label: "Inbox", icon: Inbox, badge: unreadCount },
+            { key: "sent" as View, label: "Sent Items", icon: Send }
           ].map(item => (
             <button
               key={item.key}
-              onClick={() => { setView(item.key); setSelectedSent(null); setSelectedInbox(null); }}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
+              onClick={() => {
+                setView(item.key);
+                setSelectedSent(null);
+                setSelectedInbox(null);
+                setSearchQuery("");
+              }}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 ${
                 view === item.key
-                  ? "bg-indigo-600 text-white shadow-md"
-                  : "text-slate-600 hover:bg-slate-100"
+                  ? "bg-emerald-50 text-emerald-700 shadow-sm ring-1 ring-emerald-200/50"
+                  : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
               }`}
             >
-              <span>{item.icon}</span>
+              <item.icon className={`h-5 w-5 ${view === item.key ? "text-emerald-600" : "text-slate-400"}`} />
               <span className="flex-1 text-left">{item.label}</span>
-              {item.badge && (
-                <span className="bg-red-500 text-white text-xs font-black px-1.5 py-0.5 rounded-full min-w-[20px] text-center">
+              {item.badge ? (
+                <span className="bg-emerald-600 text-white text-[10px] px-2 py-0.5 rounded-full">
                   {item.badge}
                 </span>
-              )}
+              ) : null}
             </button>
           ))}
-        </div>
+        </nav>
 
-        {/* Message List */}
-        <div className="flex-1 overflow-y-auto">
-          {view === "inbox" && (
-            <>
-              {inbox.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-40 text-slate-300">
-                  <span className="text-3xl mb-2">📭</span>
-                  <p className="text-sm">No messages from companies</p>
-                </div>
-              ) : (
-                inbox.map(msg => (
-                  <button
-                    key={msg._id}
-                    onClick={() => openInboxMsg(msg)}
-                    className={`w-full text-left px-4 py-3.5 border-b border-slate-100 hover:bg-slate-50 transition-colors ${
-                      selectedInbox?._id === msg._id ? "bg-indigo-50 border-l-2 border-l-indigo-500" : ""
-                    }`}
-                  >
-                    <div className="flex items-start justify-between gap-2 mb-0.5">
-                      <p className={`text-sm truncate ${!msg.adminRead ? "font-bold text-slate-800" : "text-slate-600"}`}>
-                        {msg.subject}
-                      </p>
-                      {!msg.adminRead && <span className="w-2 h-2 rounded-full bg-indigo-500 shrink-0 mt-1" />}
-                    </div>
-                    <p className="text-xs text-slate-500 font-medium truncate">{msg.senderCompany?.name}</p>
-                    <p className="text-xs text-slate-400 mt-1">{formatDate(msg.createdAt)}</p>
-                  </button>
-                ))
-              )}
-            </>
-          )}
+        {view !== "compose" && (
+          <div className="px-4 mb-2">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+              <input 
+                placeholder="Search messages..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 bg-slate-100 border-none rounded-lg text-sm focus:ring-2 focus:ring-emerald-500/20 placeholder:text-slate-400"
+              />
+            </div>
+          </div>
+        )}
 
-          {view === "sent" && (
-            <>
-              {sent.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-40 text-slate-300">
-                  <span className="text-3xl mb-2">📭</span>
-                  <p className="text-sm">No sent messages</p>
-                </div>
-              ) : (
-                sent.map(msg => (
-                  <button
-                    key={msg._id}
-                    onClick={() => setSelectedSent(msg)}
-                    className={`w-full text-left px-4 py-3.5 border-b border-slate-100 hover:bg-slate-50 transition-colors ${
-                      selectedSent?._id === msg._id ? "bg-indigo-50 border-l-2 border-l-indigo-500" : ""
-                    }`}
-                  >
-                    <p className="text-sm font-semibold text-slate-700 truncate mb-0.5">{msg.subject}</p>
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${broadcastLabel[msg.broadcastType]?.color}`}>
-                        {broadcastLabel[msg.broadcastType]?.label}
-                      </span>
-                      <span className="text-[10px] text-slate-400">{msg.recipients?.length} recipient{msg.recipients?.length !== 1 ? "s" : ""}</span>
-                    </div>
-                    <p className="text-xs text-slate-400">{formatDate(msg.createdAt)}</p>
-                  </button>
-                ))
-              )}
-            </>
-          )}
+        <div className="flex-1 border-t border-slate-100 mt-2 overflow-y-auto custom-scrollbar">
+          {view === "inbox" && filteredInbox.map(msg => (
+            <div
+              key={msg._id}
+              onClick={() => openInboxMsg(msg)}
+              className={`cursor-pointer p-4 border-b border-slate-50 transition-all ${
+                selectedInbox?._id === msg._id ? "bg-emerald-50/50 border-r-2 border-emerald-500" : "hover:bg-slate-50"
+              }`}
+            >
+              <div className="flex justify-between items-start mb-1">
+                <span className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase ${msg.adminRead ? "bg-slate-100 text-slate-500" : "bg-emerald-100 text-emerald-700"}`}>
+                  {msg.adminRead ? "Read" : "New"}
+                </span>
+                <span className="text-[10px] text-slate-400">{formatDate(msg.createdAt)}</span>
+              </div>
+              <p className={`text-sm truncate ${!msg.adminRead ? "font-bold text-slate-900" : "text-slate-600"}`}>
+                {msg.subject}
+              </p>
+              <p className="text-xs text-slate-400 mt-0.5 flex items-center gap-1">
+                <Building2 className="h-3 w-3" /> {msg.senderCompany?.name}
+              </p>
+            </div>
+          ))}
+
+          {view === "sent" && filteredSent.map(msg => (
+            <div
+              key={msg._id}
+              onClick={() => setSelectedSent(msg)}
+              className={`cursor-pointer p-4 border-b border-slate-50 transition-all ${
+                selectedSent?._id === msg._id ? "bg-emerald-50/50 border-r-2 border-emerald-500" : "hover:bg-slate-50"
+              }`}
+            >
+              <div className="flex justify-between items-start mb-1">
+                <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md ${typeConfig[msg.broadcastType]?.color}`}>
+                  {typeConfig[msg.broadcastType]?.label}
+                </span>
+                <span className="text-[10px] text-slate-400">{formatDate(msg.createdAt)}</span>
+              </div>
+              <p className="text-sm font-bold text-slate-800 truncate">{msg.subject}</p>
+            </div>
+          ))}
         </div>
       </div>
 
-      {/* ── MAIN PANEL ── */}
-      <div className="flex-1 overflow-y-auto">
-
-        {/* COMPOSE VIEW */}
+      {/* MAIN PANEL */}
+      <main className="flex-1 flex flex-col min-w-0 bg-white shadow-2xl m-4 rounded-2xl border border-slate-200 overflow-hidden">
+        
         {view === "compose" && (
-          <div className="max-w-2xl mx-auto p-8">
-            <h3 className="text-xl font-bold text-slate-800 mb-6">New Message</h3>
-
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-5">
-              {/* Broadcast Type */}
+          <div className="h-full flex flex-col">
+            <header className="px-8 py-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
               <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">Send To</label>
-                <div className="flex gap-2">
-                  {(["BROADCAST", "MULTICAST", "UNICAST"] as const).map(t => (
+                <h3 className="text-xl font-bold text-slate-900">New Message</h3>
+                <p className="text-sm text-slate-500">Select an audience and draft your message.</p>
+              </div>
+              <div className="flex bg-white p-1 rounded-xl border border-slate-200 shadow-sm">
+                {(["BROADCAST", "MULTICAST", "UNICAST"] as const).map((t) => {
+                  const Icon = typeConfig[t].icon;
+                  return (
                     <button
                       key={t}
-                      onClick={() => { setBroadcastType(t); setSelectedCompanies([]); }}
-                      className={`flex-1 py-2 rounded-lg text-xs font-bold border transition-all ${
-                        broadcastType === t
-                          ? "bg-indigo-600 text-white border-indigo-600 shadow"
-                          : "bg-white text-slate-600 border-slate-200 hover:border-indigo-300"
+                      onClick={() => {
+                        setBroadcastType(t);
+                        setSelectedCompanies([]);
+                      }}
+                      className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all ${
+                        broadcastType === t 
+                        ? "bg-emerald-600 text-white shadow-md" 
+                        : "text-slate-500 hover:bg-slate-50"
                       }`}
                     >
-                      {t === "BROADCAST" ? "All Companies" : t === "MULTICAST" ? "Multiple" : "One Company"}
+                      <Icon className="h-3.5 w-3.5" />
+                      {typeConfig[t].label}
                     </button>
-                  ))}
-                </div>
-                {broadcastType === "BROADCAST" && (
-                  <p className="text-xs text-slate-400 mt-2">Message will be sent to all active companies.</p>
-                )}
+                  );
+                })}
               </div>
+            </header>
 
-              {/* Company selector */}
-              {(broadcastType === "UNICAST" || broadcastType === "MULTICAST") && (
-                <div>
-                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">
-                    Select {broadcastType === "UNICAST" ? "Company" : "Companies"}
-                    {selectedCompanies.length > 0 && (
-                      <span className="ml-2 text-indigo-600 normal-case font-semibold">
-                        ({selectedCompanies.length} selected)
-                      </span>
-                    )}
-                  </label>
-                  <div className="border border-slate-200 rounded-xl overflow-hidden max-h-44 overflow-y-auto">
-                    {companies.length === 0 ? (
-                      <p className="text-sm text-slate-400 p-3">No active companies found.</p>
-                    ) : (
-                      companies.map(c => (
-                        <label
-                          key={c._id}
-                          className={`flex items-center gap-3 px-4 py-2.5 cursor-pointer hover:bg-slate-50 border-b border-slate-100 last:border-0 transition-colors ${
-                            selectedCompanies.includes(c._id) ? "bg-indigo-50" : ""
-                          }`}
-                        >
-                          <input
-                            type={broadcastType === "UNICAST" ? "radio" : "checkbox"}
-                            checked={selectedCompanies.includes(c._id)}
-                            onChange={() => toggleCompany(c._id)}
-                            className="accent-indigo-600"
-                          />
-                          <span className="text-sm font-medium text-slate-700">{c.name}</span>
-                          <span className="text-xs text-slate-400 ml-auto">{c.companyType}</span>
-                        </label>
-                      ))
-                    )}
+            <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
+              <div className="max-w-3xl space-y-8">
+                
+                {/* Company Search & Multi-select */}
+                {(broadcastType === "MULTICAST" || broadcastType === "UNICAST") && (
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">
+                        {broadcastType === "UNICAST" ? "Select Recipient" : "Select Group Recipients"}
+                      </label>
+                      <div className="relative w-64">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+                        <input 
+                          placeholder="Filter companies..."
+                          value={companySearch}
+                          onChange={(e) => setCompanySearch(e.target.value)}
+                          className="w-full pl-9 pr-4 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:ring-2 focus:ring-emerald-500/20"
+                        />
+                      </div>
+                    </div>
+                    
+                    <div className="flex flex-wrap gap-2 p-4 bg-slate-50/50 rounded-xl border border-dashed border-slate-200 max-h-40 overflow-y-auto custom-scrollbar">
+                      {filteredCompanies.length > 0 ? (
+                        filteredCompanies.map(c => (
+                          <button
+                            key={c._id}
+                            onClick={() => toggleCompany(c._id)}
+                            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                              selectedCompanies.includes(c._id)
+                                ? "bg-emerald-600 text-white shadow-sm"
+                                : "bg-white text-slate-600 border border-slate-200 hover:border-emerald-300"
+                            }`}
+                          >
+                            {c.name}
+                          </button>
+                        ))
+                      ) : (
+                        <p className="text-xs text-slate-400 italic py-2">No companies found matching your search.</p>
+                      )}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
 
-              {/* Subject */}
-              <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">Subject</label>
-                <input
-                  value={subject}
-                  onChange={e => setSubject(e.target.value)}
-                  placeholder="Enter message subject…"
-                  className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
+                <div className="space-y-4">
+                  <input
+                    placeholder="Subject Line"
+                    value={subject}
+                    onChange={e => setSubject(e.target.value)}
+                    className="w-full text-2xl font-bold text-slate-900 border-none focus:ring-0 placeholder:text-slate-200 p-0"
+                  />
+                  <div className="h-px bg-slate-100 w-full" />
+                  <textarea
+                    placeholder="Start typing your message..."
+                    value={body}
+                    onChange={e => setBody(e.target.value)}
+                    rows={10}
+                    className="w-full text-slate-700 border-none focus:ring-0 placeholder:text-slate-300 resize-none p-0 leading-relaxed text-lg"
+                  />
+                </div>
               </div>
+            </div>
 
-              {/* Body */}
-              <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">Message</label>
-                <textarea
-                  value={body}
-                  onChange={e => setBody(e.target.value)}
-                  rows={6}
-                  placeholder="Write your message to the companies…"
-                  className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
-                />
+            <footer className="px-8 py-4 border-t border-slate-100 bg-slate-50/50 flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                {sendError && <span className="text-red-600 text-xs font-bold flex items-center gap-1"><AlertCircle className="h-4 w-4"/> {sendError}</span>}
+                {sendSuccess && <span className="text-emerald-600 text-xs font-bold flex items-center gap-1"><CheckCircle2 className="h-4 w-4"/> Message Dispatched</span>}
               </div>
-
-              {sendError && (
-                <div className="text-xs text-red-600 bg-red-50 border border-red-200 px-4 py-2.5 rounded-xl">
-                  {sendError}
-                </div>
-              )}
-              {sendSuccess && (
-                <div className="text-xs text-green-700 bg-green-50 border border-green-200 px-4 py-2.5 rounded-xl font-semibold">
-                  ✓ Message sent successfully!
-                </div>
-              )}
-
               <button
                 onClick={handleSend}
                 disabled={sending}
-                className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-bold py-3 rounded-xl text-sm transition-colors shadow-md"
+                className="bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-300 text-white font-bold px-8 py-2.5 rounded-xl shadow-lg transition-all flex items-center gap-2"
               >
-                {sending ? "Sending…" : "Send Message"}
+                {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                {sending ? "Sending..." : "Send Now"}
               </button>
-            </div>
+            </footer>
           </div>
         )}
 
-        {/* INBOX DETAIL */}
-        {view === "inbox" && selectedInbox && (
-          <div className="max-w-2xl mx-auto p-8">
-            <button
-              onClick={() => setSelectedInbox(null)}
-              className="text-sm text-slate-400 hover:text-slate-600 mb-6 flex items-center gap-1.5"
-            >
-              ← Back to inbox
-            </button>
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-              <div className="px-8 py-6 border-b border-slate-100">
-                <h2 className="text-xl font-bold text-slate-800 mb-3">{selectedInbox.subject}</h2>
-                <div className="flex items-center gap-3 text-sm">
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-green-500 to-emerald-700 flex items-center justify-center text-white text-xs font-bold shrink-0">
-                      {selectedInbox.senderCompany?.name?.[0] || "C"}
-                    </div>
-                    <div>
-                      <p className="font-bold text-slate-800">{selectedInbox.senderCompany?.name}</p>
-                      <p className="text-xs text-slate-400">{selectedInbox.senderUser?.name} · {selectedInbox.senderUser?.email}</p>
-                    </div>
-                  </div>
-                  <span className="ml-auto text-xs text-slate-400">{formatDate(selectedInbox.createdAt)}</span>
-                </div>
-              </div>
-              <div className="px-8 py-6">
-                <p className="text-slate-700 leading-relaxed whitespace-pre-wrap">{selectedInbox.body}</p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* SENT DETAIL */}
-        {view === "sent" && selectedSent && (
-          <div className="max-w-2xl mx-auto p-8">
-            <div className="flex items-center justify-between mb-6">
-              <button
-                onClick={() => setSelectedSent(null)}
-                className="text-sm text-slate-400 hover:text-slate-600 flex items-center gap-1.5"
-              >
-                ← Back to sent
-              </button>
-              <button
-                onClick={() => deleteMsg(selectedSent._id)}
-                className="text-sm text-red-500 hover:text-red-700 font-medium"
-              >
-                Delete
-              </button>
-            </div>
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-              <div className="px-8 py-6 border-b border-slate-100">
-                <div className="flex items-center gap-3 mb-3">
-                  <h2 className="text-xl font-bold text-slate-800 flex-1">{selectedSent.subject}</h2>
-                  <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${broadcastLabel[selectedSent.broadcastType]?.color}`}>
-                    {broadcastLabel[selectedSent.broadcastType]?.label}
-                  </span>
-                </div>
-                <p className="text-sm text-slate-400">{formatDate(selectedSent.createdAt)}</p>
-              </div>
-              <div className="px-8 py-6">
-                <p className="text-slate-700 leading-relaxed whitespace-pre-wrap mb-6">{selectedSent.body}</p>
-                {selectedSent.recipients?.length > 0 && (
-                  <div>
-                    <p className="text-xs font-bold text-slate-400 uppercase tracking-wide mb-3">
-                      Recipients ({selectedSent.recipients.length})
-                    </p>
-                    <div className="space-y-2">
-                      {selectedSent.recipients.map((r, i) => (
-                        <div key={i} className="flex items-center justify-between px-3 py-2 bg-slate-50 rounded-lg border border-slate-100">
-                          <span className="text-sm font-medium text-slate-700">{r.company?.name || "—"}</span>
-                          <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
-                            r.isRead ? "bg-green-100 text-green-700" : "bg-slate-100 text-slate-500"
-                          }`}>
-                            {r.isRead ? "✓ Read" : "Unread"}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+        {(selectedInbox || selectedSent) ? (
+          <div className="h-full flex flex-col">
+            <div className="p-8 border-b border-slate-100">
+              <div className="flex justify-between items-start mb-6">
+                <h3 className="text-2xl font-bold text-slate-900">{(selectedInbox || selectedSent)?.subject}</h3>
+                {selectedSent && (
+                  <button onClick={() => deleteMsg(selectedSent._id)} className="p-2 text-slate-300 hover:text-red-500 transition-colors">
+                    <Trash2 className="h-5 w-5" />
+                  </button>
                 )}
               </div>
+              
+              <div className="flex items-center gap-4">
+                <div className="h-10 w-10 bg-emerald-100 text-emerald-700 rounded-full flex items-center justify-center font-bold">
+                  {(selectedInbox?.senderUser?.name || selectedSent?.senderUser?.name || "A")[0]}
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-slate-900">
+                    {selectedInbox ? selectedInbox.senderCompany?.name : "Internal Admin"}
+                  </p>
+                  <p className="text-xs text-slate-400">
+                    {selectedInbox ? selectedInbox.senderUser?.email : selectedSent?.senderUser?.email}
+                  </p>
+                </div>
+                <div className="ml-auto text-right">
+                  <p className="text-xs font-bold text-slate-400 uppercase tracking-tighter">Timestamp</p>
+                  <p className="text-xs text-slate-600 font-medium">{formatDate((selectedInbox || selectedSent)!.createdAt)}</p>
+                </div>
+              </div>
+            </div>
+            <div className="flex-1 p-8 overflow-y-auto whitespace-pre-wrap text-slate-700 leading-relaxed bg-slate-50/30">
+              {(selectedInbox || selectedSent)?.body}
             </div>
           </div>
-        )}
-
-        {/* EMPTY STATE */}
-        {((view === "inbox" && !selectedInbox) ||
-          (view === "sent" && !selectedSent)) && (
-          <div className="flex flex-col items-center justify-center h-full text-slate-300 select-none">
-            <span className="text-6xl mb-4">{view === "inbox" ? "📥" : "📤"}</span>
-            <p className="text-lg font-semibold text-slate-400">
-              {view === "inbox" ? "Select a message to read" : "Select a sent message"}
-            </p>
+        ) : view !== "compose" && (
+          <div className="h-full flex flex-col items-center justify-center text-slate-300">
+            <Mail className="h-16 w-16 mb-4 stroke-[1px]" />
+            <p className="text-lg font-medium">Select a thread to view content</p>
           </div>
         )}
-      </div>
+      </main>
+
+      <style>{`
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #E2E8F0; border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #10B981; }
+      `}</style>
     </div>
   );
 }
