@@ -82,6 +82,12 @@ export default function Sidebar({ setPage, page, onLogout }: SidebarProps) {
           />
 
           <NavItem
+            label="Forum"
+            active={page === "forum"}
+            onClick={() => setPage("forum")}
+          />
+
+          <NavItem
             label="AI Emission Advisor"
             active={page === "ai"}
             onClick={() => setPage("ai")}

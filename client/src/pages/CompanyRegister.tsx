@@ -67,13 +67,11 @@ export default function CompanyRegister({ onSuccess }: CompanyRegisterProps) {
         }));
         localStorage.setItem("role", response.data.user.role);
 
-        alert("Login successful!");
-        
         // Call onSuccess callback if provided, otherwise reload
         if (onSuccess) {
           onSuccess();
         } else {
-          window.location.reload();
+          window.location.href = "/dashboard";
         }
       }
 

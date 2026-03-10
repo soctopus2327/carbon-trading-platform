@@ -1,4 +1,4 @@
-type Page = "dashboard" | "companies" | "users" | "transactions";
+type Page = "dashboard" | "companies" | "users" | "transactions" | "messaging";
 
 interface Props {
   page: Page;
@@ -10,7 +10,8 @@ const NAV: { key: Page; label: string; icon: string }[] = [
   { key: "dashboard", label: "Dashboard", icon: "📊" },
   { key: "companies", label: "Companies", icon: "🏢" },
   { key: "users", label: "Users", icon: "👥" },
-  { key: "transactions", label: "Transactions", icon: "💱" }
+  { key: "transactions", label: "Transactions", icon: "💱" },
+  { key: "messaging", label: "Messaging", icon: "💬" }
 ];
 
 export default function PlatformAdminSidebar({ page, setPage, onLogout }: Props) {

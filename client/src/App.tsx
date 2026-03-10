@@ -10,6 +10,7 @@ import Settings from "./pages/Settings";
 import Home from "./pages/Home";
 import News from "./pages/News";
 import ManagePeople from "./pages/ManagePeople";
+import Forum from "./pages/Forum";
 
 const PAGE_TO_PATH: Record<string, string> = {
   home: "/",
@@ -19,6 +20,7 @@ const PAGE_TO_PATH: Record<string, string> = {
   holdings: "/holdings",
   reports: "/reports",
   news: "/news",
+  forum: "/forum",
   ai: "/ai",
   settings: "/settings",
   "manage-people": "/manage-people"
@@ -174,6 +176,7 @@ export default function App() {
       {page === "holdings" && <Holdings onLogout={handleLogout} />}
       {page === "reports" && <Reports onLogout={handleLogout} />}
       {page === "news" && <News onLogout={handleLogout} />}
+      {page === "forum" && <Forum onLogout={handleLogout} />}
       {page === "ai" && <AIAdvisor onLogout={handleLogout} />}
       {page === "settings" && <Settings setPage={setPage} />}
       {page === "manage-people" && <ManagePeople setPage={setPage} />}
