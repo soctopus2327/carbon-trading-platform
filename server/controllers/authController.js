@@ -32,6 +32,9 @@ exports.registerCompany = async (req, res) => {
 
     const token = generateToken(user);
 
+    // ── Notify platform admin about new company registration ──
+    await sendCompanyRegistrationAlert(company.name, email, companyType);
+
     res.json({
       token: generateToken(user._id),
       user,
