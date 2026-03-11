@@ -235,7 +235,7 @@ exports.approveCompany = async (req, res) => {
 
 exports.rejectCompany = async (req, res) => {
     try {
-        const { reason } = req.body;
+        const { reason } = req.body || {};
 
         const company = await Company.findById(req.params.id);
 
@@ -266,7 +266,7 @@ exports.rejectCompany = async (req, res) => {
 
 exports.blockCompany = async (req, res) => {
     try {
-        const { reason } = req.body;
+        const { reason } = req.body || {};
 
         const company = await Company.findById(req.params.id);
 
