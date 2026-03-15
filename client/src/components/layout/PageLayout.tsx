@@ -27,7 +27,7 @@ export default function PageLayout({
   const onManagePeoplePage = window.location.pathname === "/manage-people";
 
   return (
-    <main className="flex-1 bg-gray-50 h-screen flex flex-col min-h-0">
+    <main className="flex-1 bg-gray-50 flex flex-col min-h-0">
       <div
         className={`px-6 flex justify-between items-center border-b border-gray-200 bg-white ${
           compact ? "py-5" : "py-8"

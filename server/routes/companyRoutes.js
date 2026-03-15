@@ -18,4 +18,6 @@ router.post("/users", authMiddleware, companyAdminMiddleware, companyController.
 router.put("/users/:userId/role", authMiddleware, companyAdminMiddleware, companyController.updateCompanyUserRole);
 router.delete("/users/:userId", authMiddleware, companyAdminMiddleware, companyController.removeCompanyUser);
 
+router.get("/:companyId/credits", authMiddleware, companyController.getCompanyCredits);
+
 module.exports = router;

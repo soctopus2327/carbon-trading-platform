@@ -30,7 +30,12 @@ const companySchema = new mongoose.Schema({
     registrationNumber: String,
 
     location: String,
-
+allianceMemberships: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Alliance"
+    }
+  ],
 
 
     /*

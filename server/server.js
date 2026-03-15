@@ -15,6 +15,7 @@ const platformAdminRoutes = require("./routes/platformAdminRoutes");
 const leaderboardRoutes = require("./routes/leaderBoardRoutes");
 const newsRoutes = require("./routes/newsRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
+const allianceRoutes = require("./routes/allianceRoutes");
 const messageRoutes = require("./routes/messageRoutes");
 
 dotenv.config();
@@ -31,6 +32,7 @@ app.use("/company", cmpRoutes);
 app.use("/platform-admin", platformAdminRoutes);
 app.use("/", leaderboardRoutes);
 app.use("/news", newsRoutes);
+app.use("/alliance", allianceRoutes);
 
 async function createPlatformAdmin() {
   try {
