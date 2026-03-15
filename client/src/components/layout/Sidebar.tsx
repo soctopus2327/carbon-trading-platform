@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, LogOut } from "lucide-react";
 
 interface SidebarProps {
   setPage: (page: string) => void;
@@ -41,20 +41,20 @@ export default function Sidebar({ setPage, page, onLogout }: SidebarProps) {
   const isAlliancePage = page.startsWith("alliance");
 
   return (
-    <aside className="w-64 bg-gradient-to-b from-green-600 to-green-700 text-white border-r border-green-800 flex flex-col justify-between shrink-0">
+    <aside className="w-64 bg-gradient-to-b from-green-600 to-green-700 text-white border-r border-green-800 flex flex-col shrink-0 h-screen">
 
       {/* Top Section */}
-      <div>
+      <div className="flex-1 flex flex-col overflow-hidden">
         {/* Logo */}
-        <div className="p-6 border-b border-green-500">
+        <div className="p-6 border-b border-green-500 flex-shrink-0">
           <div className="text-2xl font-bold">CarbonX</div>
           <p className="text-xs text-green-100 mt-1">
             Carbon Trading Platform
           </p>
         </div>
 
-        {/* Navigation */}
-        <nav className="px-3 py-4">
+        {/* Navigation - Scrollable */}
+        <nav className="px-3 py-4 overflow-y-auto flex-1">
 
           <NavItem
             label="Home"
@@ -92,12 +92,6 @@ export default function Sidebar({ setPage, page, onLogout }: SidebarProps) {
             label="News"
             active={page === "news"}
             onClick={() => setPage("news")}
-          />
-
-          <NavItem
-            label="Forum"
-            active={page === "forum"}
-            onClick={() => setPage("forum")}
           />
 
           <NavItem
@@ -143,12 +137,13 @@ export default function Sidebar({ setPage, page, onLogout }: SidebarProps) {
         </nav>
       </div>
 
-      {/* Logout */}
-      <div className="p-4 border-t border-green-500">
+      {/* Logout - Fixed at bottom */}
+      <div className="p-4 border-t border-green-500 bg-green-800 bg-opacity-40 flex-shrink-0">
         <button
           onClick={handleLogout}
-          className="w-full bg-red-700 text-white py-2 rounded-lg hover:bg-red-800 transition font-semibold text-sm shadow-md"
+          className="w-full bg-gradient-to-r from-red-600 to-red-700 text-white py-3 rounded-lg hover:from-red-700 hover:to-red-800 active:scale-95 transition-all font-semibold text-sm shadow-lg flex items-center justify-center gap-2"
         >
+          <LogOut size={18} />
           Logout
         </button>
       </div>
@@ -194,7 +189,7 @@ function CollapsibleSection({
   children,
 }: CollapsibleSectionProps) {
   return (
-    <div>
+    <div className="mt-2">
       <div
         onClick={onToggle}
         className={`px-4 py-3 rounded-lg cursor-pointer transition font-medium flex items-center justify-between ${
@@ -206,11 +201,11 @@ function CollapsibleSection({
         {label}
         <ChevronDown
           size={18}
-          className={`transition-transform ${isExpanded ? "rotate-180" : ""}`}
+          className={`transition-transform duration-200 ${isExpanded ? "rotate-180" : ""}`}
         />
       </div>
       {isExpanded && (
-        <div className="ml-4 mt-2 space-y-1 border-l-2 border-green-400 pl-2">
+        <div className="mt-2 space-y-1 border-l-2 border-green-400">
           {children}
         </div>
       )}
@@ -228,9 +223,9 @@ function SubNavItem({ label, active, onClick }: SubNavItemProps) {
   return (
     <div
       onClick={onClick}
-      className={`px-4 py-2 rounded-lg cursor-pointer transition text-sm font-medium ${
+      className={`px-4 py-2.5 rounded-lg cursor-pointer transition text-sm font-medium ml-2 ${
         active
-          ? "bg-white bg-opacity-20 text-white"
+          ? "bg-white bg-opacity-25 text-white border-l-2 border-white"
           : "text-green-100 hover:bg-white hover:bg-opacity-10"
       }`}
     >

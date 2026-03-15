@@ -25,7 +25,7 @@ export default function PageLayout({
 
   const isAdmin = role === "ADMIN";
   const onManagePeoplePage = window.location.pathname === "/manage-people";
-  const onForumPage=window.location.pathname==="//forum";
+  const onForumPage=window.location.pathname==="/forum";
   return (
     <main className="flex-1 bg-gray-50 flex flex-col min-h-0">
       <div
