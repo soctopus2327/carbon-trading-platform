@@ -329,3 +329,23 @@ exports.removeCompanyUser = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
+
+exports.getCompanyCredits = async (req, res) => {
+  try {
+    const companyId = req.params.companyId || req.user.company;
+    const company = await Company.findById(companyId).select("carbonCredits name");
+
+    if (!company) {
+      return res.status(404).json({ message: "Company not found" });
+    }
+
+    res.status(200).json({
+      companyId: company._id,
+      companyName: company.name,
+      carbonCredits: company.carbonCredits || 0,
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};

@@ -14,7 +14,8 @@ export default function Sidebar({ setPage, page, onLogout }: SidebarProps) {
   }
   if (!role) role = localStorage.getItem("role");
   const canAccessMarketplace = role === "ADMIN" || role === "TRADER";
-
+  const canAccessAllianceMarketplace = role === "ADMIN" || role === "TRADER";
+  const canAccessAllianceMembers = role === "ADMIN" || role === "TRADER";
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
@@ -24,12 +25,12 @@ export default function Sidebar({ setPage, page, onLogout }: SidebarProps) {
       onLogout();
     }
 
-     setPage("home");
+    setPage("home");
   };
 
   return (
-    <aside className="w-64 bg-gradient-to-b from-green-600 to-green-700 text-white border-r border-green-800 flex flex-col justify-between h-screen shrink-0">
-      
+    <aside className="w-64 bg-gradient-to-b from-green-600 to-green-700 text-white border-r border-green-800 flex flex-col justify-between shrink-0">
+
       {/* Top Section */}
       <div>
         {/* Logo */}
@@ -93,6 +94,29 @@ export default function Sidebar({ setPage, page, onLogout }: SidebarProps) {
             onClick={() => setPage("settings")}
           />
 
+          <NavItem
+            label="Alliance Dashboard"
+            active={page === "alliance-dashboard"}
+            onClick={() => setPage("alliance-dashboard")}
+          />
+          {canAccessAllianceMarketplace && (
+            <>
+              <NavItem
+                label="Alliance Marketplace"
+                active={page === "alliance-marketplace"}
+                onClick={() => setPage("alliance-marketplace")}
+              />
+            </>
+          )}
+
+          {canAccessAllianceMembers && (
+            <NavItem
+              label="Alliance Network"
+              active={page === "alliance-members"}
+              onClick={() => setPage("alliance-members")}
+            />
+          )}
+
         </nav>
       </div>
 
@@ -120,11 +144,10 @@ function NavItem({ label, active, onClick }: NavItemProps) {
   return (
     <div
       onClick={onClick}
-      className={`px-4 py-3 rounded-lg cursor-pointer transition font-medium ${
-        active
+      className={`px-4 py-3 rounded-lg cursor-pointer transition font-medium ${active
           ? "bg-white text-green-700 shadow-lg"
           : "text-green-100 hover:bg-white hover:bg-opacity-10"
-      }`}
+        }`}
     >
       {label}
     </div>

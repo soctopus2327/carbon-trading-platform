@@ -10,18 +10,26 @@ import Settings from "./pages/Settings";
 import Home from "./pages/Home";
 import News from "./pages/News";
 import ManagePeople from "./pages/ManagePeople";
+import AllianceDashboard from "./pages/AllianceDashboard";
+import AllianceMembers from "./pages/AllianceMembers";
+import AllianceMarketplace from "./pages/AllianceMarketplace";
 
 const PAGE_TO_PATH: Record<string, string> = {
   home: "/",
   register: "/register",
   dashboard: "/dashboard",
   marketplace: "/marketplace",
+  "alliance-dashboard": "/alliance-dashboard",
+  "alliance-members": "/alliance-members",
+  "alliance-marketplace": "/alliance-marketplace",
   holdings: "/holdings",
   reports: "/reports",
   news: "/news",
   ai: "/ai",
   settings: "/settings",
-  "manage-people": "/manage-people"
+  "manage-people": "/manage-people",
+  
+  
 };
 
 const PATH_TO_PAGE: Record<string, string> = Object.fromEntries(
@@ -166,10 +174,13 @@ export default function App() {
   }
 
   return (
-    <div className="flex h-screen text-black bg-gray-50 overflow-hidden">
+    <div className="flex  text-black bg-gray-50">
       <Sidebar setPage={setPage} page={page} onLogout={handleLogout} />
 
       {page === "dashboard" && <Dashboard />}
+      {page === "alliance-dashboard" && <AllianceDashboard />}
+{page === "alliance-members" && <AllianceMembers />}
+{page === "alliance-marketplace" && <AllianceMarketplace />}
       {page === "marketplace" && <Marketplace />}
       {page === "holdings" && <Holdings onLogout={handleLogout} />}
       {page === "reports" && <Reports onLogout={handleLogout} />}

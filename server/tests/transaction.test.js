@@ -35,7 +35,6 @@ beforeEach(async () => {
   await Transaction.deleteMany({});
   await User.deleteMany({});
 
-  // seller company
   sellerCompany = await Company.create({
     name: "SellerCo",
     companyType: "COMPANY",
@@ -45,7 +44,6 @@ beforeEach(async () => {
     status: "ACTIVE"
   });
 
-  // buyer company
   buyerCompany = await Company.create({
     name: "BuyerCo",
     companyType: "COMPANY",
@@ -84,10 +82,7 @@ describe("Transaction APIs", () => {
 
   test("execute transaction successfully", async () => {
 
-    const token = jwt.sign(
-      { id: buyerUser._id },
-      "secret"
-    );
+    const token = jwt.sign({ id: buyerUser._id }, "secret");
 
     const res = await request(app)
       .post("/transactions/execute")
@@ -134,6 +129,153 @@ describe("Transaction APIs", () => {
       .set("Authorization", `Bearer ${token}`)
       .send({
         tradeId: new mongoose.Types.ObjectId(),
+        quantity: 1
+      });
+
+    expect(res.statusCode).toBe(404);
+
+  });
+
+  test("should fail if requested credits exceed available", async () => {
+
+    const token = jwt.sign({ id: buyerUser._id }, "secret");
+
+    const res = await request(app)
+      .post("/transactions/execute")
+      .set("Authorization", `Bearer ${token}`)
+      .send({
+        tradeId: trade._id,
+        quantity: 50
+      });
+
+    expect(res.statusCode).toBe(400);
+
+  });
+
+  test("should fail if buyer tries to buy from own company", async () => {
+
+    const token = jwt.sign({ id: sellerUser._id }, "secret");
+
+    const res = await request(app)
+      .post("/transactions/execute")
+      .set("Authorization", `Bearer ${token}`)
+      .send({
+        tradeId: trade._id,
+        quantity: 1
+      });
+
+    expect(res.statusCode).toBe(400);
+
+  });
+
+  test("should apply discount when buyer uses coins", async () => {
+
+    const token = jwt.sign({ id: buyerUser._id }, "secret");
+
+    const res = await request(app)
+      .post("/transactions/execute")
+      .set("Authorization", `Bearer ${token}`)
+      .send({
+        tradeId: trade._id,
+        quantity: 2,
+        useDiscount: true
+      });
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body.discountApplied).toBe(1000);
+    expect(res.body.coinsUsed).toBe(100);
+
+  });
+
+  test("should fail if buyer company inactive", async () => {
+
+    buyerCompany.status = "PENDING";
+    await buyerCompany.save();
+
+    const token = jwt.sign({ id: buyerUser._id }, "secret");
+
+    const res = await request(app)
+      .post("/transactions/execute")
+      .set("Authorization", `Bearer ${token}`)
+      .send({
+        tradeId: trade._id,
+        quantity: 1
+      });
+
+    expect(res.statusCode).toBe(403);
+
+  });
+
+  test("should fail if seller company inactive", async () => {
+
+    sellerCompany.status = "PENDING";
+    await sellerCompany.save();
+
+    const token = jwt.sign({ id: buyerUser._id }, "secret");
+
+    const res = await request(app)
+      .post("/transactions/execute")
+      .set("Authorization", `Bearer ${token}`)
+      .send({
+        tradeId: trade._id,
+        quantity: 1
+      });
+
+    expect(res.statusCode).toBe(403);
+
+  });
+
+  test("should fail if role not allowed", async () => {
+
+    buyerUser.role = "VIEWER";
+    await buyerUser.save();
+
+    const token = jwt.sign({ id: buyerUser._id }, "secret");
+
+    const res = await request(app)
+      .post("/transactions/execute")
+      .set("Authorization", `Bearer ${token}`)
+      .send({
+        tradeId: trade._id,
+        quantity: 1
+      });
+
+    expect(res.statusCode).toBe(403);
+
+  });
+
+  test("should not apply discount if coins less than 100", async () => {
+
+    buyerCompany.coins = 50;
+    await buyerCompany.save();
+
+    const token = jwt.sign({ id: buyerUser._id }, "secret");
+
+    const res = await request(app)
+      .post("/transactions/execute")
+      .set("Authorization", `Bearer ${token}`)
+      .send({
+        tradeId: trade._id,
+        quantity: 2,
+        useDiscount: true
+      });
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body.discountApplied).toBe(0);
+
+  });
+
+  test("should fail if buyer company not found", async () => {
+
+    await Company.deleteMany({});
+
+    const token = jwt.sign({ id: buyerUser._id }, "secret");
+
+    const res = await request(app)
+      .post("/transactions/execute")
+      .set("Authorization", `Bearer ${token}`)
+      .send({
+        tradeId: trade._id,
         quantity: 1
       });
 

@@ -23,6 +23,7 @@ export default function Holdings({ onLogout: _onLogout }: { onLogout?: () => voi
     totalCoins: 0,
   });
   const [loading, setLoading] = useState(false);
+  const [totalCredits, setTotalCredits] = useState(0); // NEW
 
   const user =
     typeof window !== "undefined"
@@ -34,8 +35,25 @@ export default function Holdings({ onLogout: _onLogout }: { onLogout?: () => voi
       ? localStorage.getItem("token")
       : null;
 
+  const fetchTotalCredits = async () => {
+  try {
+    const token = localStorage.getItem("token");
+    const userData = JSON.parse(localStorage.getItem("user") || "{}");
+    const companyId = userData.company;
+
+    const res = await axios.get(`http://localhost:5000/company/${companyId}/credits`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    setTotalCredits(res.data.carbonCredits); // save total credits
+  } catch (err) {
+    console.error("Error fetching total credits", err);
+  }
+};
+
   useEffect(() => {
     fetchTransactions();
+    fetchTotalCredits();
   }, []);
 
   const fetchTransactions = async () => {
@@ -178,7 +196,7 @@ export default function Holdings({ onLogout: _onLogout }: { onLogout?: () => voi
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             <div>
               <p className="text-sm text-gray-600">Available Credits</p>
-              <p className="text-3xl font-bold text-green-600">{summary.currentCredits}</p>
+              <p className="text-3xl font-bold text-green-600">{totalCredits}</p>
             </div>
             <div>
               <p className="text-sm text-gray-600">Money Invested (Buying)</p>
