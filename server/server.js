@@ -16,6 +16,7 @@ const leaderboardRoutes = require("./routes/leaderBoardRoutes");
 const newsRoutes = require("./routes/newsRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
 const allianceRoutes = require("./routes/allianceRoutes");
+const messageRoutes = require("./routes/messageRoutes");
 
 dotenv.config();
 
@@ -23,6 +24,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 app.use("/notifications", notificationRoutes);
+app.use("/messages", messageRoutes);
 app.use("/auth", authRoutes);
 app.use("/trade", tradeRoutes);
 app.use("/transactions", txRoutes);

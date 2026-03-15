@@ -136,8 +136,62 @@ exports.sendBlockEmail = async (companyName, companyEmail, reason) => {
     console.error("❌ Failed to send block email:", err.message);
   }
 };
-// ```
 
-// Replace your entire `emailService.js` with this. Then restart the server and register a new company — you should see in the terminal:
-// ```
-// ✅ Registration alert sent! Preview: https://ethereal.email/message/abc123
+// ── Notify company when unblocked ──
+exports.sendUnblockEmail = async (companyName, companyEmail) => {
+  try {
+    const transporter = await getTransporter();
+    const info = await transporter.sendMail({
+      from: '"Carbon Trading Platform" <admin@desis.com>',
+      to: companyEmail,
+      subject: `✅ Your Company Has Been Unblocked — ${companyName}`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px;">
+          <h2 style="color: #16a34a;">Company Account Unblocked</h2>
+          <p>Dear <strong>${companyName}</strong>,</p>
+          <p>Good news! Your company account has been <strong style="color: #16a34a;">unblocked</strong> by the platform admin.</p>
+          <p>You can now log in and access all platform features again.</p>
+          <a href="http://localhost:5173" style="background: #16a34a; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: bold;">
+            Login to Platform
+          </a>
+          <p style="color: #9ca3af; font-size: 12px; margin-top: 20px;">Carbon Trading Platform — Desis 2025</p>
+        </div>
+      `
+    });
+    console.log("✅ Unblock email sent! Preview:", nodemailer.getTestMessageUrl(info));
+  } catch (err) {
+    console.error("❌ Failed to send unblock email:", err.message);
+  }
+};
+
+// ── Welcome email to new user added by Company Admin ──
+exports.sendWelcomeUserEmail = async (userName, userEmail, companyName, role, tempPassword) => {
+  try {
+    const transporter = await getTransporter();
+    const info = await transporter.sendMail({
+      from: '"Carbon Trading Platform" <admin@desis.com>',
+      to: userEmail,
+      subject: `👋 Welcome to ${companyName} — Carbon Trading Platform`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px;">
+          <h2 style="color: #4f46e5;">Welcome to the Carbon Trading Platform!</h2>
+          <p>Dear <strong>${userName}</strong>,</p>
+          <p>You have been added to <strong>${companyName}</strong> as a <strong>${role}</strong>.</p>
+          <div style="background: #f0f9ff; border: 1px solid #bae6fd; padding: 15px; border-radius: 8px; margin: 20px 0;">
+            <p style="margin: 0;"><strong>Your Login Credentials:</strong></p>
+            <p style="margin: 8px 0 0;">Email: <strong>${userEmail}</strong></p>
+            <p style="margin: 4px 0 0;">Temporary Password: <strong style="color: #4f46e5;">${tempPassword}</strong></p>
+          </div>
+          <p style="color: #dc2626; font-size: 13px;">⚠️ Please change your password after your first login.</p>
+          <a href="http://localhost:5173" style="background: #4f46e5; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: bold;">
+            Login Now
+          </a>
+          <p style="color: #9ca3af; font-size: 12px; margin-top: 20px;">Carbon Trading Platform — Desis 2025</p>
+        </div>
+      `
+    });
+    console.log("✅ Welcome email sent! Preview:", nodemailer.getTestMessageUrl(info));
+  } catch (err) {
+    console.error("❌ Failed to send welcome email:", err.message);
+  }
+};

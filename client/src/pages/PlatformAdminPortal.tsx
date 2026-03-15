@@ -4,9 +4,10 @@ import AdminDashboard from "./admin/AdminDashboard";
 import CompanyManagement from "./admin/CompanyManagement";
 import UserManagement from "./admin/UserManagement";
 import TransactionsAudit from "./admin/TransactionsAudit";
+import AdminMessaging from "./admin/AdminMessaging";
 import PlatformAdminSidebar from "../components/admin/PlatformAdminSidebar";
 
-type Page = "dashboard" | "companies" | "users" | "transactions";
+type Page = "dashboard" | "companies" | "users" | "transactions" | "messaging";
 
 export default function PlatformAdminPortal() {
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
@@ -37,6 +38,7 @@ export default function PlatformAdminPortal() {
         {page === "companies" && <CompanyManagement />}
         {page === "users" && <UserManagement />}
         {page === "transactions" && <TransactionsAudit />}
+        {page === "messaging" && <AdminMessaging />}
       </main>
     </div>
   );

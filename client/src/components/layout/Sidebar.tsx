@@ -42,7 +42,7 @@ export default function Sidebar({ setPage, page, onLogout }: SidebarProps) {
         </div>
 
         {/* Navigation */}
-        <nav className="px-3 py-6 space-y-2">
+        <nav className="px-3 py-4">
 
           <NavItem
             label="Home"
@@ -80,6 +80,12 @@ export default function Sidebar({ setPage, page, onLogout }: SidebarProps) {
             label="News"
             active={page === "news"}
             onClick={() => setPage("news")}
+          />
+
+          <NavItem
+            label="Forum"
+            active={page === "forum"}
+            onClick={() => setPage("forum")}
           />
 
           <NavItem

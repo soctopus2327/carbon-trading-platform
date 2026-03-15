@@ -4,7 +4,7 @@ const TradeListing = require("../models/TradeListing");
 const Transaction = require("../models/Transaction");
 const bcrypt = require("bcryptjs");
 const generateToken = require("../utils/generateToken");
-const { sendApprovalEmail, sendRejectionEmail, sendBlockEmail } = require("../utils/emailService");
+const { sendApprovalEmail, sendRejectionEmail, sendBlockEmail, sendUnblockEmail } = require("../utils/emailService");
 
 // ─────────────────────────────────────────────
 // AUTH
@@ -235,7 +235,7 @@ exports.approveCompany = async (req, res) => {
 
 exports.rejectCompany = async (req, res) => {
     try {
-        const { reason } = req.body;
+        const { reason } = req.body || {};
 
         const company = await Company.findById(req.params.id);
 
@@ -266,7 +266,7 @@ exports.rejectCompany = async (req, res) => {
 
 exports.blockCompany = async (req, res) => {
     try {
-        const { reason } = req.body;
+        const { reason } = req.body || {};
 
         const company = await Company.findById(req.params.id);
 
@@ -306,6 +306,10 @@ exports.unblockCompany = async (req, res) => {
 
         company.status = "ACTIVE";
         await company.save();
+
+        // ── Send unblock email to company admin ──
+        const adminUser = await User.findOne({ company: company._id, role: "ADMIN" });
+        if (adminUser) await sendUnblockEmail(company.name, adminUser.email);
 
         res.json({
             message: "Company unblocked",

@@ -82,7 +82,7 @@ const Home: React.FC<HomeProps> = ({ setPage }) => {
                             {languageSwitcher}
                             <button onClick={() => setPage("dashboard")} className="hover:text-green-600">Dashboard</button>
                             <button onClick={goToLeaderboard} className="hover:text-green-600">Leaderboard</button>
-                            <button onClick={()=>setPage("dashboard")} className="hover:text-green-600">Forum</button>
+                            <button onClick={() => setPage("forum")} className="hover:text-green-600">Forum</button>
                             <button onClick={logout} className="text-white hover:text-red-600">Logout</button>
                         </div>
                     ) : (

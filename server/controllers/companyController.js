@@ -2,6 +2,7 @@ const Company = require("../models/Company");
 const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const { USER_ROLE } = require("../models/enums");
+const { sendWelcomeUserEmail } = require("../utils/emailService");
 
 
 exports.getDashboard = async (req, res) => {
@@ -235,6 +236,9 @@ exports.addCompanyUser = async (req, res) => {
       { _id: company._id },
       { $addToSet: { users: newUser._id } }
     );
+
+    // ── Send welcome email with temp credentials ──
+    await sendWelcomeUserEmail(displayName, normalizedEmail, company.name, role, tempPassword);
 
     res.status(201).json({
       message: "User added successfully",
