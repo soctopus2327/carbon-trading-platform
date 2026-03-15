@@ -46,8 +46,14 @@ const tradeListingSchema = new mongoose.Schema({
         type: Date,
         default: Date.now
 
+    },
+    payLaterUsed: {
+        type: Boolean,
+        default: false
+    },
+    payLaterDate: {
+        type: Date
     }
-
 });
 
 module.exports = mongoose.model("TradeListing", tradeListingSchema);

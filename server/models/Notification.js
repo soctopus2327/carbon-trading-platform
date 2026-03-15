@@ -14,15 +14,14 @@ const notificationSchema = new mongoose.Schema({
 
     type: {
         type: String,
-        enum: ["BROADCAST", "MULTICAST", "UNICAST"],
+        enum: ["BROADCAST", "MULTICAST", "UNICAST", "PAYMENT_REMINDER"],
         required: true
     },
 
     // Who sent it
     sentBy: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
-        required: true
+        ref: "User"
     },
 
     // Which companies received it
@@ -42,6 +41,16 @@ const notificationSchema = new mongoose.Schema({
             }
         }
     ],
+
+    // For payment reminders
+    transactionId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Transaction"
+    },
+
+    dueDate: {
+        type: Date
+    },
 
     createdAt: {
         type: Date,

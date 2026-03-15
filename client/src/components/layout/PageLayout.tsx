@@ -25,7 +25,7 @@ export default function PageLayout({
 
   const isAdmin = role === "ADMIN";
   const onManagePeoplePage = window.location.pathname === "/manage-people";
-
+  const onForumPage=window.location.pathname==="//forum";
   return (
     <main className="flex-1 bg-gray-50 flex flex-col min-h-0">
       <div
@@ -56,8 +56,16 @@ export default function PageLayout({
             </button>
           )}
 
-          <button className="bg-gradient-to-r from-green-500 to-green-600 text-white px-6 py-2 rounded-lg shadow-md hover:shadow-lg hover:from-green-600 hover:to-green-700 transition font-semibold">
-            Alliance Funds
+          <button 
+            onClick={()=>{
+              if(onForumPage){
+                return; 
+              }
+                window.history.pushState({}, "", "/forum");
+                window.dispatchEvent(new PopStateEvent("popstate"));
+            }}
+            className="bg-gradient-to-r from-green-500 to-green-600 text-white px-6 py-2 rounded-lg shadow-md hover:shadow-lg hover:from-green-600 hover:to-green-700 transition font-semibold">
+            Forum
           </button>
         </div>
       </div>

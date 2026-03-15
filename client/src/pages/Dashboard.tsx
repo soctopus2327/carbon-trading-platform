@@ -86,7 +86,7 @@ export default function Dashboard() {
 
   return (
     <PageLayout
-      title={titleCompany ? `Dashboard - ${titleCompany}` : "Dashboard"}
+      title={titleCompany ? `Dashboard - ${companyName}` : "Dashboard"}
       description="Overview of your carbon portfolio and trading activity"
       compact
     >

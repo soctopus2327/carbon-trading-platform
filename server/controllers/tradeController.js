@@ -120,3 +120,63 @@ exports.deleteTrade = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
+
+//pay later
+exports.payLater = async (req, res) => {
+  try {
+    const { tradeId, quantity, useDiscount, payLaterDate } = req.body;
+
+    const trade = await TradeListing.findById(tradeId);
+    if (!trade) return res.status(404).json({ message: "Trade not found" });
+
+    const buyer = await Company.findById(req.user.company);
+    const seller = await Company.findById(trade.sellerCompany);
+
+    if (!buyer || !seller) return res.status(404).json({ message: "Company not found" });
+
+    // check available credits
+    const availableCredits = Math.min(trade.remainingQuantity, trade.quantity);
+    if (availableCredits < quantity) {
+      return res.status(400).json({ message: "Not enough credits available" });
+    }
+
+    let discountApplied = 0;
+    let coinsUsed = 0;
+
+    if (useDiscount && buyer.coins >= 100) {
+      discountApplied = 1000;
+      coinsUsed = 100;
+      buyer.coins -= coinsUsed;
+    }
+
+    const totalAmount = quantity * trade.pricePerCredit;
+
+    // Create transaction with status PENDING
+    const transaction = await Transaction.create({
+      buyerCompany: buyer._id,
+      sellerCompany: seller._id,
+      listing: trade._id,
+      credits: quantity,
+      pricePerCredit: trade.pricePerCredit,
+      totalAmount,
+      discountApplied,
+      status: "PENDING",
+      payLaterDate,
+    });
+
+    // mark buyer as having pay later
+    buyer.payLaterUsed = true;
+    buyer.payLaterDate = payLaterDate;
+
+    await buyer.save();
+
+    res.json({
+      message: "Pay later scheduled",
+      transaction,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+};
