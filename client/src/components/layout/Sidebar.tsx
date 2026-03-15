@@ -41,7 +41,7 @@ export default function Sidebar({ setPage, page, onLogout }: SidebarProps) {
         </div>
 
         {/* Navigation */}
-        <nav className="px-3 py-6 space-y-2">
+        <nav className="px-3 py-4">
 
           <NavItem
             label="Home"
