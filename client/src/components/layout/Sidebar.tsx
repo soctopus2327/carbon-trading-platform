@@ -1,3 +1,6 @@
+import { useState } from "react";
+import { ChevronDown } from "lucide-react";
+
 interface SidebarProps {
   setPage: (page: string) => void;
   page: string;
@@ -5,6 +8,8 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ setPage, page, onLogout }: SidebarProps) {
+  const [expandedSection, setExpandedSection] = useState<string | null>(null);
+  
   let role: string | null = null;
   try {
     const rawUser = localStorage.getItem("user");
@@ -16,6 +21,7 @@ export default function Sidebar({ setPage, page, onLogout }: SidebarProps) {
   const canAccessMarketplace = role === "ADMIN" || role === "TRADER";
   const canAccessAllianceMarketplace = role === "ADMIN" || role === "TRADER";
   const canAccessAllianceMembers = role === "ADMIN" || role === "TRADER";
+  
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
@@ -27,6 +33,12 @@ export default function Sidebar({ setPage, page, onLogout }: SidebarProps) {
 
     setPage("home");
   };
+
+  const toggleSection = (section: string) => {
+    setExpandedSection(expandedSection === section ? null : section);
+  };
+
+  const isAlliancePage = page.startsWith("alliance");
 
   return (
     <aside className="w-64 bg-gradient-to-b from-green-600 to-green-700 text-white border-r border-green-800 flex flex-col justify-between shrink-0">
@@ -100,28 +112,33 @@ export default function Sidebar({ setPage, page, onLogout }: SidebarProps) {
             onClick={() => setPage("settings")}
           />
 
-          <NavItem
-            label="Alliance Dashboard"
-            active={page === "alliance-dashboard"}
-            onClick={() => setPage("alliance-dashboard")}
-          />
-          {canAccessAllianceMarketplace && (
-            <>
-              <NavItem
+          {/* Alliance Section - Collapsible */}
+          <CollapsibleSection
+            label="Alliance"
+            isExpanded={expandedSection === "alliance"}
+            isActive={isAlliancePage}
+            onToggle={() => toggleSection("alliance")}
+          >
+            <SubNavItem
+              label="Alliance Dashboard"
+              active={page === "alliance-dashboard"}
+              onClick={() => setPage("alliance-dashboard")}
+            />
+            {canAccessAllianceMarketplace && (
+              <SubNavItem
                 label="Alliance Marketplace"
                 active={page === "alliance-marketplace"}
                 onClick={() => setPage("alliance-marketplace")}
               />
-            </>
-          )}
-
-          {canAccessAllianceMembers && (
-            <NavItem
-              label="Alliance Network"
-              active={page === "alliance-members"}
-              onClick={() => setPage("alliance-members")}
-            />
-          )}
+            )}
+            {canAccessAllianceMembers && (
+              <SubNavItem
+                label="Alliance Network"
+                active={page === "alliance-members"}
+                onClick={() => setPage("alliance-members")}
+              />
+            )}
+          </CollapsibleSection>
 
         </nav>
       </div>
@@ -150,10 +167,72 @@ function NavItem({ label, active, onClick }: NavItemProps) {
   return (
     <div
       onClick={onClick}
-      className={`px-4 py-3 rounded-lg cursor-pointer transition font-medium ${active
+      className={`px-4 py-3 rounded-lg cursor-pointer transition font-medium ${
+        active
           ? "bg-white text-green-700 shadow-lg"
           : "text-green-100 hover:bg-white hover:bg-opacity-10"
+      }`}
+    >
+      {label}
+    </div>
+  );
+}
+
+interface CollapsibleSectionProps {
+  label: string;
+  isExpanded: boolean;
+  isActive: boolean;
+  onToggle: () => void;
+  children: React.ReactNode;
+}
+
+function CollapsibleSection({
+  label,
+  isExpanded,
+  isActive,
+  onToggle,
+  children,
+}: CollapsibleSectionProps) {
+  return (
+    <div>
+      <div
+        onClick={onToggle}
+        className={`px-4 py-3 rounded-lg cursor-pointer transition font-medium flex items-center justify-between ${
+          isActive
+            ? "bg-white text-green-700 shadow-lg"
+            : "text-green-100 hover:bg-white hover:bg-opacity-10"
         }`}
+      >
+        {label}
+        <ChevronDown
+          size={18}
+          className={`transition-transform ${isExpanded ? "rotate-180" : ""}`}
+        />
+      </div>
+      {isExpanded && (
+        <div className="ml-4 mt-2 space-y-1 border-l-2 border-green-400 pl-2">
+          {children}
+        </div>
+      )}
+    </div>
+  );
+}
+
+interface SubNavItemProps {
+  label: string;
+  active?: boolean;
+  onClick?: () => void;
+}
+
+function SubNavItem({ label, active, onClick }: SubNavItemProps) {
+  return (
+    <div
+      onClick={onClick}
+      className={`px-4 py-2 rounded-lg cursor-pointer transition text-sm font-medium ${
+        active
+          ? "bg-white bg-opacity-20 text-white"
+          : "text-green-100 hover:bg-white hover:bg-opacity-10"
+      }`}
     >
       {label}
     </div>

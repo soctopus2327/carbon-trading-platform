@@ -50,6 +50,22 @@ const transactionSchema = new mongoose.Schema({
         default: 0
     },
 
+    status: {
+        type: String,
+        enum: ["PENDING", "SUCCESS", "FAILED"],
+        default: "SUCCESS"
+    },
+
+    payLater: {
+        type: Boolean,
+        default: false
+    },
+
+    payLaterDate: {
+        type: Date,
+        default: null
+    },
+
     createdAt: {
 
         type: Date,
