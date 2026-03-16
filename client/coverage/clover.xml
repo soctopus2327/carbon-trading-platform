@@ -1,0 +1,288 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<coverage generated="1773643814802" clover="3.2.0">
+  <project timestamp="1773643814802" name="All files">
+    <metrics statements="246" coveredstatements="239" conditionals="146" coveredconditionals="136" methods="98" coveredmethods="86" elements="490" coveredelements="461" complexity="0" loc="246" ncloc="246" packages="3" files="9" classes="9"/>
+    <package name="api">
+      <metrics statements="43" coveredstatements="43" conditionals="3" coveredconditionals="3" methods="17" coveredmethods="17"/>
+      <file name="platformAdminApi.ts" path="D:\carbon-trading-platform-main\client\src\api\platformAdminApi.ts">
+        <metrics statements="43" coveredstatements="43" conditionals="3" coveredconditionals="3" methods="17" coveredmethods="17"/>
+        <line num="1" count="6" type="stmt"/>
+        <line num="3" count="6" type="stmt"/>
+        <line num="6" count="24" type="stmt"/>
+        <line num="7" count="24" type="stmt"/>
+        <line num="11" count="6" type="stmt"/>
+        <line num="12" count="2" type="stmt"/>
+        <line num="13" count="2" type="stmt"/>
+        <line num="17" count="6" type="stmt"/>
+        <line num="18" count="4" type="stmt"/>
+        <line num="19" count="4" type="stmt"/>
+        <line num="23" count="6" type="cond" truecount="1" falsecount="0"/>
+        <line num="24" count="3" type="stmt"/>
+        <line num="28" count="3" type="stmt"/>
+        <line num="31" count="6" type="stmt"/>
+        <line num="32" count="1" type="stmt"/>
+        <line num="33" count="1" type="stmt"/>
+        <line num="36" count="6" type="stmt"/>
+        <line num="37" count="1" type="stmt"/>
+        <line num="38" count="1" type="stmt"/>
+        <line num="41" count="6" type="stmt"/>
+        <line num="42" count="2" type="stmt"/>
+        <line num="47" count="2" type="stmt"/>
+        <line num="50" count="6" type="stmt"/>
+        <line num="51" count="1" type="stmt"/>
+        <line num="56" count="1" type="stmt"/>
+        <line num="59" count="6" type="stmt"/>
+        <line num="60" count="1" type="stmt"/>
+        <line num="61" count="1" type="stmt"/>
+        <line num="64" count="6" type="stmt"/>
+        <line num="69" count="4" type="stmt"/>
+        <line num="74" count="4" type="stmt"/>
+        <line num="77" count="6" type="stmt"/>
+        <line num="78" count="1" type="stmt"/>
+        <line num="79" count="1" type="stmt"/>
+        <line num="83" count="6" type="cond" truecount="1" falsecount="0"/>
+        <line num="84" count="2" type="stmt"/>
+        <line num="88" count="2" type="stmt"/>
+        <line num="91" count="6" type="stmt"/>
+        <line num="92" count="1" type="stmt"/>
+        <line num="93" count="1" type="stmt"/>
+        <line num="97" count="6" type="cond" truecount="1" falsecount="0"/>
+        <line num="98" count="3" type="stmt"/>
+        <line num="102" count="3" type="stmt"/>
+      </file>
+    </package>
+    <package name="components.admin">
+      <metrics statements="16" coveredstatements="16" conditionals="13" coveredconditionals="13" methods="7" coveredmethods="7"/>
+      <file name="ConfirmModal.tsx" path="D:\carbon-trading-platform-main\client\src\components\admin\ConfirmModal.tsx">
+        <metrics statements="2" coveredstatements="2" conditionals="4" coveredconditionals="4" methods="1" coveredmethods="1"/>
+        <line num="10" count="1" type="stmt"/>
+        <line num="18" count="8" type="stmt"/>
+      </file>
+      <file name="PlatformAdminSidebar.tsx" path="D:\carbon-trading-platform-main\client\src\components\admin\PlatformAdminSidebar.tsx">
+        <metrics statements="8" coveredstatements="8" conditionals="8" coveredconditionals="8" methods="3" coveredmethods="3"/>
+        <line num="1" count="1" type="stmt"/>
+        <line num="19" count="1" type="stmt"/>
+        <line num="27" count="1" type="stmt"/>
+        <line num="28" count="10" type="cond" truecount="2" falsecount="0"/>
+        <line num="30" count="10" type="stmt"/>
+        <line num="49" count="50" type="stmt"/>
+        <line num="50" count="50" type="stmt"/>
+        <line num="53" count="5" type="stmt"/>
+      </file>
+      <file name="ReasonModal.tsx" path="D:\carbon-trading-platform-main\client\src\components\admin\ReasonModal.tsx">
+        <metrics statements="6" coveredstatements="6" conditionals="1" coveredconditionals="1" methods="3" coveredmethods="3"/>
+        <line num="1" count="1" type="stmt"/>
+        <line num="10" count="1" type="cond" truecount="1" falsecount="0"/>
+        <line num="11" count="47" type="stmt"/>
+        <line num="13" count="47" type="stmt"/>
+        <line num="23" count="38" type="stmt"/>
+        <line num="37" count="2" type="stmt"/>
+      </file>
+    </package>
+    <package name="pages.admin">
+      <metrics statements="187" coveredstatements="180" conditionals="130" coveredconditionals="120" methods="74" coveredmethods="62"/>
+      <file name="AdminDashboard.tsx" path="D:\carbon-trading-platform-main\client\src\pages\admin\AdminDashboard.tsx">
+        <metrics statements="17" coveredstatements="17" conditionals="6" coveredconditionals="6" methods="5" coveredmethods="5"/>
+        <line num="1" count="1" type="stmt"/>
+        <line num="2" count="1" type="stmt"/>
+        <line num="23" count="54" type="stmt"/>
+        <line num="40" count="1" type="stmt"/>
+        <line num="41" count="19" type="stmt"/>
+        <line num="42" count="19" type="stmt"/>
+        <line num="43" count="19" type="stmt"/>
+        <line num="45" count="19" type="stmt"/>
+        <line num="46" count="11" type="stmt"/>
+        <line num="48" count="1" type="stmt"/>
+        <line num="49" count="9" type="stmt"/>
+        <line num="52" count="19" type="cond" truecount="2" falsecount="0"/>
+        <line num="53" count="11" type="stmt"/>
+        <line num="59" count="8" type="cond" truecount="2" falsecount="0"/>
+        <line num="60" count="1" type="stmt"/>
+        <line num="66" count="7" type="cond" truecount="2" falsecount="0"/>
+        <line num="68" count="6" type="stmt"/>
+      </file>
+      <file name="CompanyManagement.tsx" path="D:\carbon-trading-platform-main\client\src\pages\admin\CompanyManagement.tsx">
+        <metrics statements="79" coveredstatements="75" conditionals="52" coveredconditionals="46" methods="35" coveredmethods="29"/>
+        <line num="1" count="1" type="stmt"/>
+        <line num="2" count="1" type="stmt"/>
+        <line num="11" count="1" type="stmt"/>
+        <line num="12" count="1" type="stmt"/>
+        <line num="13" count="1" type="stmt"/>
+        <line num="15" count="1" type="stmt"/>
+        <line num="30" count="1" type="stmt"/>
+        <line num="37" count="1" type="stmt"/>
+        <line num="39" count="116" type="stmt"/>
+        <line num="40" count="116" type="stmt"/>
+        <line num="41" count="116" type="stmt"/>
+        <line num="42" count="116" type="stmt"/>
+        <line num="44" count="116" type="stmt"/>
+        <line num="45" count="116" type="stmt"/>
+        <line num="46" count="116" type="stmt"/>
+        <line num="47" count="116" type="stmt"/>
+        <line num="49" count="116" type="stmt"/>
+        <line num="50" count="116" type="stmt"/>
+        <line num="51" count="116" type="stmt"/>
+        <line num="53" count="116" type="stmt"/>
+        <line num="55" count="41" type="stmt"/>
+        <line num="57" count="41" type="stmt"/>
+        <line num="59" count="41" type="stmt"/>
+        <line num="61" count="41" type="cond" truecount="2" falsecount="0"/>
+        <line num="62" count="41" type="cond" truecount="2" falsecount="0"/>
+        <line num="63" count="41" type="cond" truecount="2" falsecount="0"/>
+        <line num="65" count="41" type="stmt"/>
+        <line num="67" count="40" type="cond" truecount="1" falsecount="1"/>
+        <line num="68" count="40" type="cond" truecount="2" falsecount="0"/>
+        <line num="69" count="40" type="cond" truecount="1" falsecount="1"/>
+        <line num="74" count="40" type="stmt"/>
+        <line num="79" count="116" type="stmt"/>
+        <line num="80" count="34" type="stmt"/>
+        <line num="83" count="116" type="stmt"/>
+        <line num="84" count="1" type="stmt"/>
+        <line num="85" count="1" type="stmt"/>
+        <line num="88" count="116" type="stmt"/>
+        <line num="90" count="2" type="cond" truecount="1" falsecount="1"/>
+        <line num="92" count="2" type="cond" truecount="2" falsecount="0"/>
+        <line num="93" count="1" type="stmt"/>
+        <line num="95" count="1" type="stmt"/>
+        <line num="97" count="2" type="stmt"/>
+        <line num="98" count="2" type="stmt"/>
+        <line num="101" count="116" type="stmt"/>
+        <line num="102" count="1" type="stmt"/>
+        <line num="103" count="1" type="stmt"/>
+        <line num="106" count="116" type="stmt"/>
+        <line num="108" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="110" count="1" type="stmt"/>
+        <line num="111" count="1" type="stmt"/>
+        <line num="112" count="1" type="stmt"/>
+        <line num="115" count="116" type="stmt"/>
+        <line num="117" count="1" type="stmt"/>
+        <line num="118" count="1" type="stmt"/>
+        <line num="119" count="1" type="stmt"/>
+        <line num="120" count="1" type="stmt"/>
+        <line num="124" count="116" type="stmt"/>
+        <line num="126" count="116" type="stmt"/>
+        <line num="172" count="3" type="stmt"/>
+        <line num="182" count="2" type="stmt"/>
+        <line num="187" count="580" type="stmt"/>
+        <line num="196" count="1" type="stmt"/>
+        <line num="201" count="464" type="stmt"/>
+        <line num="230" count="696" type="stmt"/>
+        <line num="262" count="151" type="stmt"/>
+        <line num="277" count="2" type="stmt"/>
+        <line num="313" count="1" type="stmt"/>
+        <line num="314" count="3" type="stmt"/>
+        <line num="319" count="2" type="stmt"/>
+        <line num="323" count="1" type="stmt"/>
+        <line num="327" count="0" type="stmt"/>
+        <line num="334" count="2" type="stmt"/>
+        <line num="364" count="0" type="stmt"/>
+        <line num="372" count="0" type="stmt"/>
+        <line num="387" count="1" type="stmt"/>
+        <line num="396" count="1" type="stmt"/>
+        <line num="407" count="0" type="stmt"/>
+        <line num="425" count="198" type="stmt"/>
+        <line num="431" count="198" type="stmt"/>
+      </file>
+      <file name="PlatformAdminLogin.tsx" path="D:\carbon-trading-platform-main\client\src\pages\admin\PlatformAdminLogin.tsx">
+        <metrics statements="22" coveredstatements="22" conditionals="14" coveredconditionals="14" methods="5" coveredmethods="5"/>
+        <line num="1" count="1" type="stmt"/>
+        <line num="2" count="1" type="stmt"/>
+        <line num="3" count="1" type="stmt"/>
+        <line num="9" count="1" type="stmt"/>
+        <line num="10" count="254" type="stmt"/>
+        <line num="11" count="254" type="stmt"/>
+        <line num="12" count="254" type="stmt"/>
+        <line num="13" count="254" type="stmt"/>
+        <line num="15" count="254" type="stmt"/>
+        <line num="16" count="8" type="stmt"/>
+        <line num="17" count="8" type="stmt"/>
+        <line num="18" count="8" type="stmt"/>
+        <line num="20" count="8" type="stmt"/>
+        <line num="21" count="8" type="stmt"/>
+        <line num="22" count="4" type="stmt"/>
+        <line num="23" count="3" type="stmt"/>
+        <line num="24" count="3" type="stmt"/>
+        <line num="26" count="4" type="cond" truecount="10" falsecount="0"/>
+        <line num="28" count="7" type="stmt"/>
+        <line num="32" count="254" type="stmt"/>
+        <line num="70" count="135" type="stmt"/>
+        <line num="87" count="93" type="stmt"/>
+      </file>
+      <file name="TransactionsAudit.tsx" path="D:\carbon-trading-platform-main\client\src\pages\admin\TransactionsAudit.tsx">
+        <metrics statements="22" coveredstatements="21" conditionals="18" coveredconditionals="18" methods="10" coveredmethods="8"/>
+        <line num="1" count="1" type="stmt"/>
+        <line num="2" count="1" type="stmt"/>
+        <line num="4" count="1" type="stmt"/>
+        <line num="5" count="53" type="stmt"/>
+        <line num="6" count="53" type="stmt"/>
+        <line num="7" count="53" type="stmt"/>
+        <line num="8" count="53" type="stmt"/>
+        <line num="9" count="53" type="stmt"/>
+        <line num="11" count="53" type="stmt"/>
+        <line num="12" count="18" type="stmt"/>
+        <line num="13" count="18" type="stmt"/>
+        <line num="14" count="18" type="stmt"/>
+        <line num="15" count="17" type="stmt"/>
+        <line num="16" count="17" type="stmt"/>
+        <line num="17" count="17" type="stmt"/>
+        <line num="21" count="17" type="stmt"/>
+        <line num="25" count="53" type="stmt"/>
+        <line num="27" count="53" type="stmt"/>
+        <line num="39" count="318" type="stmt"/>
+        <line num="54" count="27" type="stmt"/>
+        <line num="74" count="0" type="stmt"/>
+        <line num="82" count="1" type="stmt"/>
+      </file>
+      <file name="UserManagement.tsx" path="D:\carbon-trading-platform-main\client\src\pages\admin\UserManagement.tsx">
+        <metrics statements="47" coveredstatements="45" conditionals="40" coveredconditionals="36" methods="19" coveredmethods="15"/>
+        <line num="1" count="1" type="stmt"/>
+        <line num="2" count="1" type="stmt"/>
+        <line num="3" count="1" type="stmt"/>
+        <line num="4" count="1" type="stmt"/>
+        <line num="18" count="1" type="stmt"/>
+        <line num="25" count="1" type="stmt"/>
+        <line num="26" count="96" type="stmt"/>
+        <line num="27" count="96" type="stmt"/>
+        <line num="28" count="96" type="stmt"/>
+        <line num="29" count="96" type="stmt"/>
+        <line num="31" count="96" type="stmt"/>
+        <line num="32" count="96" type="stmt"/>
+        <line num="33" count="96" type="stmt"/>
+        <line num="35" count="96" type="stmt"/>
+        <line num="37" count="96" type="stmt"/>
+        <line num="38" count="33" type="stmt"/>
+        <line num="39" count="33" type="stmt"/>
+        <line num="40" count="33" type="stmt"/>
+        <line num="41" count="33" type="cond" truecount="2" falsecount="0"/>
+        <line num="42" count="33" type="cond" truecount="2" falsecount="0"/>
+        <line num="44" count="33" type="stmt"/>
+        <line num="45" count="32" type="cond" truecount="1" falsecount="1"/>
+        <line num="46" count="32" type="cond" truecount="2" falsecount="0"/>
+        <line num="47" count="32" type="cond" truecount="1" falsecount="1"/>
+        <line num="51" count="32" type="stmt"/>
+        <line num="55" count="96" type="stmt"/>
+        <line num="56" count="30" type="stmt"/>
+        <line num="59" count="96" type="stmt"/>
+        <line num="60" count="2" type="cond" truecount="1" falsecount="1"/>
+        <line num="61" count="2" type="stmt"/>
+        <line num="62" count="2" type="stmt"/>
+        <line num="63" count="2" type="stmt"/>
+        <line num="66" count="96" type="stmt"/>
+        <line num="67" count="1" type="stmt"/>
+        <line num="68" count="1" type="stmt"/>
+        <line num="69" count="1" type="stmt"/>
+        <line num="72" count="96" type="stmt"/>
+        <line num="100" count="5" type="stmt"/>
+        <line num="110" count="2" type="stmt"/>
+        <line num="114" count="480" type="cond" truecount="2" falsecount="0"/>
+        <line num="135" count="576" type="stmt"/>
+        <line num="161" count="121" type="stmt"/>
+        <line num="193" count="4" type="stmt"/>
+        <line num="215" count="0" type="stmt"/>
+        <line num="222" count="0" type="stmt"/>
+        <line num="235" count="4" type="cond" truecount="3" falsecount="1"/>
+        <line num="239" count="1" type="stmt"/>
+      </file>
+    </package>
+  </project>
+</coverage>
