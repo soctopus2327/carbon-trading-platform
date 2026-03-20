@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { LANGUAGE_OPTIONS, getSavedLanguage, setSiteLanguage } from "../components/GoogleTranslate";
+import { act } from "react";
 interface HomeProps {
     setPage: (page: string) => void;
 }
@@ -11,16 +12,27 @@ const Home: React.FC<HomeProps> = ({ setPage }) => {
     const leaderboardRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
-        const token = localStorage.getItem("token");
-        const user = localStorage.getItem("user");
+    const token = localStorage.getItem("token");
+    const user = localStorage.getItem("user");
 
-        if (token && user) setIsLoggedIn(true);
+    if (token && user) {
+        setIsLoggedIn(true);
+    }
 
-        fetch("http://localhost:5000/leaderboard")
-            .then(res => res.json())
-            .then(data => setLeaderboard(data))
-            .catch(err => console.error(err));
-    }, []);
+    fetch("http://localhost:5000/leaderboard")
+        .then((res) => {
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            return res.json();
+        })
+        .then((data) => {
+    act(() => {
+        setLeaderboard(data);
+    });
+})
+        .catch((err) => {
+            console.error("Leaderboard fetch error:", err);
+        });
+}, []);
   const goToLeaderboard = () => {
         setPage("home"); // Make sure we are on home page
         setTimeout(() => {

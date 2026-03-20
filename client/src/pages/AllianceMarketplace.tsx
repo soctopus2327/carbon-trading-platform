@@ -181,7 +181,7 @@ export default function AllianceMarketplace() {
 
   // ==================== RENDER ====================
   return (
-    <PageLayout>
+    <PageLayout title="Alliance Marketplace">
       <div className="p-10 bg-gradient-to-br from-indigo-50 via-white to-indigo-100 min-h-screen">
         <h1 className="text-4xl font-bold text-indigo-700 mb-10">Alliance Marketplace</h1>
 
