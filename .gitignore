@@ -10,5 +10,6 @@ __pycache__/
 *.pyc
 .pytest_cache/
 
-# Advisor upload temp folder
-ai/uploads/
+# bm25 chunks
+server/ai/carbon_trading_rag/corpus/bm25_chunks.json
+server/ai/uploads
