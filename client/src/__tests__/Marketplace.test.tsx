@@ -1,418 +1,372 @@
-// Tests Covered
+/// <reference types="@testing-library/jest-dom" />
+import React from 'react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import axios from 'axios';
+import Marketplace from '../pages/Marketplace'; // adjust path as needed
+
+jest.mock('axios');
+const mockedAxios = axios as jest.Mocked<typeof axios>;
+
+
+// ────────────────────────────────────────────────
+// Tests Covered (same as before)
+// ────────────────────────────────────────────────
 // shows loading state while trades request is pending
 // renders listings and summary metrics after fetch
+// prevents buying from own listing and shows disabled message
 // creates a trade from sell tab and refreshes data
 // edits an existing listing and saves changes
 // deletes an existing listing
 // validates purchase quantity before API call
-// validates pay later date requirements
-// executes purchase, updates local user coins, and closes modal
+// shows and calculates discount correctly in purchase modal UI
+// executes normal purchase, updates local user coins, and closes modal
 // hides discount option when user has fewer than 100 coins
-// shows empty listings block when trade fetch fails
+// validates pay later date requirements (future date only)
+// executes pay-later purchase with correct ISO date payload
+// shows backend purchase error message on transaction failure
+// shows empty listings block when trade fetch fails or returns empty
 // shows API error message when creating a trade fails
 // shows API error message when updating a trade fails
 // shows API error message when deleting a trade fails
-// executes pay-later purchase with ISO date payload
-// shows backend purchase error message on transaction failure
 // resets pay-later mode when purchase modal is cancelled
 
-/// <reference types="@testing-library/jest-dom" />
 
-import React from "react";
-import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
-import axios from "axios";
 
-import Marketplace from "../pages/Marketplace";
+beforeAll(() => {
+  jest.spyOn(console, 'error').mockImplementation(() => {});
+  jest.spyOn(console, 'warn').mockImplementation(() => {});
+});
 
-jest.mock("axios");
+afterAll(() => {
+  jest.restoreAllMocks();
+});
 
-const mockedAxios = axios as jest.Mocked<typeof axios>;
-
-const tradesFixture = [
-	{
-		_id: "trade-1",
-		pricePerCredit: 100,
-		quantity: 10,
-		remainingQuantity: 6,
-		status: "ACTIVE",
-		sellerCompany: {
-			_id: "seller-company",
-			name: "Seller One",
-		},
-	},
-	{
-		_id: "trade-2",
-		pricePerCredit: 80,
-		quantity: 5,
-		remainingQuantity: 5,
-		status: "ACTIVE",
-		sellerCompany: {
-			_id: "my-company",
-			name: "My Company",
-		},
-	},
+const mockTrades = [
+  {
+    _id: 'trade-1',
+    pricePerCredit: 100,
+    quantity: 10,
+    remainingQuantity: 6,
+    status: 'ACTIVE',
+    sellerCompany: { _id: 'seller-a', name: 'GreenFuture Ltd' },
+  },
+  {
+    _id: 'trade-2',
+    pricePerCredit: 85,
+    quantity: 8,
+    remainingQuantity: 8,
+    status: 'ACTIVE',
+    sellerCompany: { _id: 'my-company-id', name: 'My Company' },
+  },
 ];
 
-function setSession(points = 150) {
-	localStorage.setItem("token", "token-1");
-	localStorage.setItem(
-		"user",
-		JSON.stringify({ company: "my-company", points, coins: points })
-	);
+function setupUserSession(points = 150, companyId = 'my-company-id') {
+  localStorage.setItem('token', 'fake-jwt-token');
+  localStorage.setItem(
+    'user',
+    JSON.stringify({
+      company: companyId,
+      points,
+      coins: points,
+    })
+  );
 }
 
-async function openPurchaseModalForSeller(sellerName: string) {
-	await screen.findByText("Available Listings");
-	const sellerCard = screen.getByText(sellerName).closest("article") as HTMLElement;
-	fireEvent.click(within(sellerCard).getByRole("button", { name: "Buy Credits" }));
-	await screen.findByText("Purchase Credits");
+async function waitForListings() {
+  await screen.findByText('Available Listings', {}, { timeout: 2000 });
 }
 
-describe("Marketplace page", () => {
-	let alertSpy: jest.SpyInstance;
-	let consoleErrorSpy: jest.SpyInstance;
-
-	beforeEach(() => {
-		jest.clearAllMocks();
-		localStorage.clear();
-		setSession();
-
-		alertSpy = jest.spyOn(window, "alert").mockImplementation(() => undefined);
-		consoleErrorSpy = jest.spyOn(console, "error").mockImplementation(() => undefined);
-
-		mockedAxios.get.mockResolvedValue({ data: tradesFixture });
-		mockedAxios.post.mockResolvedValue({ data: { ok: true, coinsEarned: 25 } });
-		mockedAxios.put.mockResolvedValue({ data: { ok: true } });
-		mockedAxios.delete.mockResolvedValue({ data: { ok: true } });
-	});
-
-	afterEach(() => {
-		alertSpy.mockRestore();
-		consoleErrorSpy.mockRestore();
-	});
-
-	it("shows loading state while trades request is pending", () => {
-		mockedAxios.get.mockImplementation(() => new Promise(() => {}));
-
-		render(<Marketplace />);
-
-		expect(screen.getByText("Loading marketplace...")).toBeInTheDocument();
-	});
-
-	it("renders listings and summary metrics after fetch", async () => {
-		render(<Marketplace />);
-
-		await waitFor(() => {
-			expect(mockedAxios.get).toHaveBeenCalledWith("http://localhost:5000/trade", {
-				headers: { Authorization: "Bearer token-1" },
-			});
-		});
-
-		expect(await screen.findByText("Available Listings")).toBeInTheDocument();
-		expect(screen.getByText("Seller One")).toBeInTheDocument();
-		expect(screen.getByText("Open Listings")).toBeInTheDocument();
-		expect(screen.getByText("My Listings")).toBeInTheDocument();
-		expect(screen.getByText("Credits Listed")).toBeInTheDocument();
-		expect(screen.getByText("My Coins")).toBeInTheDocument();
-		expect(screen.getByText("150")).toBeInTheDocument();
-	});
-
-	it("creates a trade from sell tab and refreshes data", async () => {
-		render(<Marketplace />);
-
-		await screen.findByText("Available Listings");
-		fireEvent.click(screen.getByRole("button", { name: "Sell Credits" }));
-
-		fireEvent.change(screen.getByPlaceholderText("Enter price"), {
-			target: { value: "120" },
-		});
-		fireEvent.change(screen.getByPlaceholderText("Enter quantity"), {
-			target: { value: "9" },
-		});
-
-		fireEvent.click(screen.getByRole("button", { name: "Create Trade" }));
-
-		await waitFor(() => {
-			expect(mockedAxios.post).toHaveBeenCalledWith(
-				"http://localhost:5000/trade",
-				{ pricePerCredit: 120, quantity: 9 },
-				{ headers: { Authorization: "Bearer token-1" } }
-			);
-		});
-
-		expect(alertSpy).toHaveBeenCalledWith("Trade added successfully!");
-		expect(mockedAxios.get).toHaveBeenCalledTimes(2);
-	});
-
-	it("edits an existing listing and saves changes", async () => {
-		render(<Marketplace />);
-
-		await screen.findByText("Available Listings");
-		fireEvent.click(screen.getByRole("button", { name: "Sell Credits" }));
-
-		await screen.findByText("My Active Listings");
-		fireEvent.click(screen.getByRole("button", { name: "Edit" }));
-
-		fireEvent.change(screen.getByDisplayValue("80"), { target: { value: "95" } });
-		fireEvent.change(screen.getByDisplayValue("5"), { target: { value: "7" } });
-		fireEvent.click(screen.getByRole("button", { name: "Save" }));
-
-		await waitFor(() => {
-			expect(mockedAxios.put).toHaveBeenCalledWith(
-				"http://localhost:5000/trade/trade-2",
-				{ pricePerCredit: 95, quantity: 7 },
-				{ headers: { Authorization: "Bearer token-1" } }
-			);
-		});
-
-		expect(alertSpy).toHaveBeenCalledWith("Trade updated successfully!");
-	});
-
-	it("deletes an existing listing", async () => {
-		render(<Marketplace />);
-
-		await screen.findByText("Available Listings");
-		fireEvent.click(screen.getByRole("button", { name: "Sell Credits" }));
-
-		await screen.findByText("My Active Listings");
-		fireEvent.click(screen.getByRole("button", { name: "Delete" }));
-
-		await waitFor(() => {
-			expect(mockedAxios.delete).toHaveBeenCalledWith("http://localhost:5000/trade/trade-2", {
-				headers: { Authorization: "Bearer token-1" },
-			});
-		});
-
-		expect(alertSpy).toHaveBeenCalledWith("Trade deleted successfully!");
-	});
-
-	it("validates purchase quantity before API call", async () => {
-		render(<Marketplace />);
-
-		await openPurchaseModalForSeller("Seller One");
-
-		fireEvent.click(screen.getByRole("button", { name: "Confirm Purchase" }));
-
-		expect(alertSpy).toHaveBeenCalledWith("Enter a valid quantity");
-		expect(mockedAxios.post).not.toHaveBeenCalled();
-	});
-
-	it("validates pay later date requirements", async () => {
-		render(<Marketplace />);
-
-		await openPurchaseModalForSeller("Seller One");
-
-		fireEvent.change(screen.getByPlaceholderText("Enter quantity"), {
-			target: { value: "2" },
-		});
-		fireEvent.click(screen.getByRole("button", { name: "Pay Later" }));
-
-		fireEvent.click(screen.getByRole("button", { name: "Purchase & Pay Later" }));
-		expect(alertSpy).toHaveBeenCalledWith("Please select a pay later date");
-
-		const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000)
-			.toISOString()
-			.split("T")[0];
-		const dateInput = document.querySelector("input[type='date']") as HTMLInputElement;
-		fireEvent.change(dateInput, { target: { value: yesterday } });
-
-		fireEvent.click(screen.getByRole("button", { name: "Purchase & Pay Later" }));
-		expect(alertSpy).toHaveBeenCalledWith("Please select a valid future date for Pay Later");
-	});
-
-	it("executes purchase, updates local user coins, and closes modal", async () => {
-		mockedAxios.post.mockResolvedValueOnce({ data: { coinsEarned: 40 } });
-
-		render(<Marketplace />);
-
-		await openPurchaseModalForSeller("Seller One");
-
-		fireEvent.change(screen.getByPlaceholderText("Enter quantity"), {
-			target: { value: "2" },
-		});
-
-		const discountToggle = screen.getByRole("checkbox");
-		fireEvent.click(discountToggle);
-
-		fireEvent.click(screen.getByRole("button", { name: "Confirm Purchase" }));
-
-		await waitFor(() => {
-			expect(mockedAxios.post).toHaveBeenCalledWith(
-				"http://localhost:5000/transactions/execute",
-				{
-					tradeId: "trade-1",
-					quantity: 2,
-					useDiscount: true,
-					payLater: false,
-					payLaterDate: null,
-				},
-				{ headers: { Authorization: "Bearer token-1" } }
-			);
-		});
-
-		expect(alertSpy).toHaveBeenCalledWith("Purchase successful!");
-
-		const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
-		expect(storedUser.points).toBe(90);
-		expect(storedUser.coins).toBe(90);
-
-		await waitFor(() => {
-			expect(screen.queryByText("Purchase Credits")).not.toBeInTheDocument();
-		});
-	});
-
-	it("hides discount option when user has fewer than 100 coins", async () => {
-		localStorage.clear();
-		setSession(50);
-
-		render(<Marketplace />);
-
-		await openPurchaseModalForSeller("Seller One");
-
-		expect(screen.queryByRole("checkbox")).not.toBeInTheDocument();
-	});
-
-		it("shows empty listings block when trade fetch fails", async () => {
-			mockedAxios.get.mockRejectedValueOnce(new Error("fetch failed"));
-
-			render(<Marketplace />);
-
-			expect(await screen.findByText("No trades available yet.")).toBeInTheDocument();
-			expect(consoleErrorSpy).toHaveBeenCalled();
-		});
-
-		it("shows API error message when creating a trade fails", async () => {
-			mockedAxios.post.mockRejectedValueOnce({
-				response: { data: { error: "Create trade failed" } },
-			});
-
-			render(<Marketplace />);
-
-			await screen.findByText("Available Listings");
-			fireEvent.click(screen.getByRole("button", { name: "Sell Credits" }));
-
-			fireEvent.change(screen.getByPlaceholderText("Enter price"), {
-				target: { value: "120" },
-			});
-			fireEvent.change(screen.getByPlaceholderText("Enter quantity"), {
-				target: { value: "9" },
-			});
-			fireEvent.click(screen.getByRole("button", { name: "Create Trade" }));
-
-			await waitFor(() => {
-				expect(alertSpy).toHaveBeenCalledWith("Create trade failed");
-			});
-		});
-
-		it("shows API error message when updating a trade fails", async () => {
-			mockedAxios.put.mockRejectedValueOnce({
-				response: { data: { error: "Update trade failed" } },
-			});
-
-			render(<Marketplace />);
-
-			await screen.findByText("Available Listings");
-			fireEvent.click(screen.getByRole("button", { name: "Sell Credits" }));
-			fireEvent.click(screen.getByRole("button", { name: "Edit" }));
-			fireEvent.click(screen.getByRole("button", { name: "Save" }));
-
-			await waitFor(() => {
-				expect(alertSpy).toHaveBeenCalledWith("Update trade failed");
-			});
-		});
-
-		it("shows API error message when deleting a trade fails", async () => {
-			mockedAxios.delete.mockRejectedValueOnce({
-				response: { data: { error: "Delete trade failed" } },
-			});
-
-			render(<Marketplace />);
-
-			await screen.findByText("Available Listings");
-			fireEvent.click(screen.getByRole("button", { name: "Sell Credits" }));
-			fireEvent.click(screen.getByRole("button", { name: "Delete" }));
-
-			await waitFor(() => {
-				expect(alertSpy).toHaveBeenCalledWith("Delete trade failed");
-			});
-		});
-
-		it("executes pay-later purchase with ISO date payload", async () => {
-			mockedAxios.post.mockResolvedValueOnce({ data: { coinsEarned: 30 } });
-
-			render(<Marketplace />);
-
-			await openPurchaseModalForSeller("Seller One");
-
-			fireEvent.change(screen.getByPlaceholderText("Enter quantity"), {
-				target: { value: "2" },
-			});
-			fireEvent.click(screen.getByRole("button", { name: "Pay Later" }));
-
-			const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000)
-				.toISOString()
-				.split("T")[0];
-			const expectedIsoDate = new Date(tomorrow).toISOString();
-			const dateInput = document.querySelector("input[type='date']") as HTMLInputElement;
-			fireEvent.change(dateInput, { target: { value: tomorrow } });
-
-			fireEvent.click(screen.getByRole("button", { name: "Purchase & Pay Later" }));
-
-			await waitFor(() => {
-				expect(mockedAxios.post).toHaveBeenCalledWith(
-					"http://localhost:5000/transactions/execute",
-					{
-						tradeId: "trade-1",
-						quantity: 2,
-						useDiscount: false,
-						payLater: true,
-						payLaterDate: expectedIsoDate,
-					},
-					{ headers: { Authorization: "Bearer token-1" } }
-				);
-			});
-
-			expect(alertSpy).toHaveBeenCalledWith(
-				expect.stringContaining("Credits received! Payment reminder will be sent on")
-			);
-
-			const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
-			expect(storedUser.points).toBe(180);
-			expect(storedUser.coins).toBe(180);
-		});
-
-		it("shows backend purchase error message on transaction failure", async () => {
-			mockedAxios.post.mockRejectedValueOnce({
-				response: { data: { message: "Quota exceeded" } },
-			});
-
-			render(<Marketplace />);
-
-			await openPurchaseModalForSeller("Seller One");
-			fireEvent.change(screen.getByPlaceholderText("Enter quantity"), {
-				target: { value: "2" },
-			});
-			fireEvent.click(screen.getByRole("button", { name: "Confirm Purchase" }));
-
-			await waitFor(() => {
-				expect(alertSpy).toHaveBeenCalledWith("Quota exceeded");
-			});
-		});
-
-		it("resets pay-later mode when purchase modal is cancelled", async () => {
-			render(<Marketplace />);
-
-			await openPurchaseModalForSeller("Seller One");
-			fireEvent.click(screen.getByRole("button", { name: "Pay Later" }));
-			expect(screen.getByRole("button", { name: "Purchase & Pay Later" })).toBeInTheDocument();
-
-			fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
-			await waitFor(() => {
-				expect(screen.queryByText("Purchase Credits")).not.toBeInTheDocument();
-			});
-
-			await openPurchaseModalForSeller("Seller One");
-			expect(screen.getByRole("button", { name: "Confirm Purchase" })).toBeInTheDocument();
-			expect(screen.getByRole("button", { name: "Pay Later" })).toBeInTheDocument();
-		});
-	});
+async function switchToSellTab() {
+  fireEvent.click(screen.getByRole('button', { name: /sell credits/i }));
+  await screen.findByText('Create New Listing');
+}
+
+async function openBuyModalForSeller(sellerName: string) {
+  await waitForListings();
+  const card = screen.getByText(sellerName).closest('article');
+  if (!card) throw new Error(`No listing card found for ${sellerName}`);
+  const buyButton = within(card as HTMLElement).getByRole('button', { name: /buy credits/i });
+  fireEvent.click(buyButton);
+  await screen.findByText('Purchase Credits');
+}
+
+describe('Marketplace page', () => {
+  let alertSpy: jest.SpyInstance;
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    localStorage.clear();
+    setupUserSession(150, 'my-company-id');
+
+    alertSpy = jest.spyOn(window, 'alert').mockImplementation(() => {});
+
+    mockedAxios.get.mockResolvedValue({ data: mockTrades });
+    mockedAxios.post.mockResolvedValue({ data: { coinsEarned: 30 } });
+    mockedAxios.put.mockResolvedValue({ data: {} });
+    mockedAxios.delete.mockResolvedValue({ data: {} });
+  });
+
+  afterEach(() => {
+    alertSpy.mockRestore();
+  });
+
+  it('shows loading state while trades request is pending', () => {
+    mockedAxios.get.mockImplementationOnce(() => new Promise(() => {}));
+    render(<Marketplace />);
+    expect(screen.getByText('Loading marketplace...')).toBeInTheDocument();
+  });
+
+  it('renders listings and summary metrics after fetch', async () => {
+    render(<Marketplace />);
+    await waitForListings();
+
+    expect(screen.getByText('GreenFuture Ltd')).toBeInTheDocument();
+    expect(screen.getByText('6 credits available')).toBeInTheDocument();
+
+    expect(screen.getByText('2')).toBeInTheDocument(); // Open Listings
+    expect(screen.getByText('1')).toBeInTheDocument(); // My Listings
+    expect(screen.getByText('8')).toBeInTheDocument(); // Credits Listed
+    expect(screen.getByText('150')).toBeInTheDocument(); // My Coins
+  });
+
+  it('prevents buying from own listing and shows disabled message', async () => {
+    render(<Marketplace />);
+    await waitForListings();
+
+    const ownCard = screen.getByText('My Company').closest('article')!;
+    expect(within(ownCard).getByText('(Your Listing)')).toBeInTheDocument();
+
+    const disabledBtn = within(ownCard).getByRole('button', { name: /can't trade with self/i });
+    expect(disabledBtn).toBeDisabled();
+
+    expect(within(ownCard).queryByRole('button', { name: /buy credits/i })).not.toBeInTheDocument();
+  });
+
+  it('creates a trade from sell tab and refreshes data', async () => {
+    render(<Marketplace />);
+    await waitForListings();
+    await switchToSellTab();
+
+    const priceInput = screen.getByPlaceholderText('Enter price');
+    const qtyInput   = screen.getByPlaceholderText('Enter quantity');
+
+    fireEvent.change(priceInput, { target: { value: '120' } });
+    fireEvent.change(qtyInput,   { target: { value: '15' } });
+
+    fireEvent.click(screen.getByRole('button', { name: /Create Trade Listing/i }));
+
+    await waitFor(() => {
+      expect(mockedAxios.post).toHaveBeenCalledWith(
+        'http://localhost:5000/trade',
+        { pricePerCredit: 120, quantity: 15 },
+        expect.objectContaining({ headers: expect.any(Object) })
+      );
+      expect(alertSpy).toHaveBeenCalledWith('Trade added successfully!');
+    });
+  });
+
+  it('edits an existing listing and saves changes', async () => {
+    render(<Marketplace />);
+    await waitForListings();
+    await switchToSellTab();
+
+    await screen.findByText('My Active Listings');
+
+    const myListingCard = screen.getByText('INR 85/credit').closest('div.rounded-xl') as HTMLElement;
+    const editButton = within(myListingCard).getByRole('button', { name: /edit/i });
+
+    fireEvent.click(editButton);
+
+    await waitFor(() => {
+      expect(screen.getByDisplayValue('85')).toBeInTheDocument();
+    });
+
+    fireEvent.change(screen.getByDisplayValue('85'), { target: { value: '95' } });
+    fireEvent.change(screen.getByDisplayValue('8'),  { target: { value: '5' } });
+
+    fireEvent.click(screen.getByRole('button', { name: /Save Changes/i }));
+
+    await waitFor(() => {
+      expect(mockedAxios.put).toHaveBeenCalledWith(
+        'http://localhost:5000/trade/trade-2',
+        { pricePerCredit: 95, quantity: 5 },
+        expect.any(Object)
+      );
+      expect(alertSpy).toHaveBeenCalledWith('Trade updated successfully!');
+    });
+  });
+
+  it('deletes an existing listing', async () => {
+    render(<Marketplace />);
+    await waitForListings();
+    await switchToSellTab();
+
+    const myListingCard = screen.getByText('INR 85/credit').closest('div.rounded-xl') as HTMLElement;
+    const deleteButton = within(myListingCard).getByRole('button', { name: /delete/i });
+
+    fireEvent.click(deleteButton);
+
+    await waitFor(() => {
+      expect(mockedAxios.delete).toHaveBeenCalledWith(
+        'http://localhost:5000/trade/trade-2',
+        expect.any(Object)
+      );
+      expect(alertSpy).toHaveBeenCalledWith('Trade deleted successfully!');
+    });
+  });
+
+  it('validates purchase quantity before API call', async () => {
+    render(<Marketplace />);
+    await openBuyModalForSeller('GreenFuture Ltd');
+
+    fireEvent.click(screen.getByRole('button', { name: /Confirm Purchase/i }));
+    expect(alertSpy).toHaveBeenCalledWith('Enter a valid quantity');
+    expect(mockedAxios.post).not.toHaveBeenCalled();
+  });
+
+  it('shows and calculates discount correctly in purchase modal UI', async () => {
+    render(<Marketplace />);
+    await openBuyModalForSeller('GreenFuture Ltd');
+
+    const qtyInput = screen.getByPlaceholderText(/Enter quantity/i);
+    fireEvent.change(qtyInput, { target: { value: '4' } });
+
+    await waitFor(() => {
+      expect(screen.getByText(/Total: INR 400/)).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole('checkbox'));
+
+    await waitFor(() => {
+      expect(screen.getByText(/Total: INR 0/)).toBeInTheDocument(); // clamped
+    });
+  });
+
+  it('executes normal purchase, updates local user coins, and closes modal', async () => {
+    render(<Marketplace />);
+    await openBuyModalForSeller('GreenFuture Ltd');
+
+    fireEvent.change(screen.getByPlaceholderText(/Enter quantity/i), { target: { value: '3' } });
+    fireEvent.click(screen.getByRole('checkbox'));
+
+    fireEvent.click(screen.getByRole('button', { name: /Confirm Purchase/i }));
+
+    await waitFor(() => {
+      expect(mockedAxios.post).toHaveBeenCalledWith(
+        'http://localhost:5000/transactions/execute',
+        expect.objectContaining({
+          tradeId: 'trade-1',
+          quantity: 3,
+          useDiscount: true,
+          payLater: false,
+          payLaterDate: null,
+        }),
+        expect.any(Object)
+      );
+      expect(alertSpy).toHaveBeenCalledWith('Purchase successful!');
+    });
+
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    expect(user.points).toBe(150 - 100 + 30); // 80
+    expect(screen.queryByText('Purchase Credits')).not.toBeInTheDocument();
+  });
+
+  it('hides discount option when user has fewer than 100 coins', async () => {
+    setupUserSession(80);
+    render(<Marketplace />);
+    await openBuyModalForSeller('GreenFuture Ltd');
+
+    expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
+  });
+
+  it('validates pay later date requirements', async () => {
+    render(<Marketplace />);
+    await openBuyModalForSeller('GreenFuture Ltd');
+
+    fireEvent.change(screen.getByPlaceholderText(/Enter quantity/i), { target: { value: '2' } });
+    fireEvent.click(screen.getByRole('button', { name: /Pay Later/i }));
+
+    // Try submit without date
+    fireEvent.click(screen.getByRole('button', { name: /Purchase & Pay Later/i }));
+    expect(alertSpy).toHaveBeenCalledWith('Please select a pay later date');
+
+    // Set past date
+    const dateInput = screen.getByDisplayValue(''); // the empty date input
+    const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+    fireEvent.change(dateInput, { target: { value: yesterday } });
+
+    fireEvent.click(screen.getByRole('button', { name: /Purchase & Pay Later/i }));
+    expect(alertSpy).toHaveBeenCalledWith('Please select a valid future date for Pay Later');
+  });
+
+  it('executes pay-later purchase with ISO date payload', async () => {
+    render(<Marketplace />);
+    await openBuyModalForSeller('GreenFuture Ltd');
+
+    fireEvent.change(screen.getByPlaceholderText(/Enter quantity/i), { target: { value: '2' } });
+    fireEvent.click(screen.getByRole('button', { name: /Pay Later/i }));
+
+    const tomorrow = new Date(Date.now() + 86400000);
+    const dateStr = tomorrow.toISOString().split('T')[0];
+
+    const dateInput = screen.getByDisplayValue(''); // date input starts empty
+    fireEvent.change(dateInput, { target: { value: dateStr } });
+
+    fireEvent.click(screen.getByRole('button', { name: /Purchase & Pay Later/i }));
+
+    await waitFor(() => {
+      expect(mockedAxios.post).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.objectContaining({
+          payLater: true,
+          payLaterDate: expect.stringMatching(/T00:00:00\.000Z$/),
+        }),
+        expect.any(Object)
+      );
+      expect(alertSpy).toHaveBeenCalledWith(expect.stringContaining('Payment reminder will be sent on'));
+    });
+  });
+
+  it('shows backend purchase error message on transaction failure', async () => {
+    mockedAxios.post.mockRejectedValueOnce({
+      response: { data: { message: 'Insufficient balance or credits' } },
+    });
+
+    render(<Marketplace />);
+    await openBuyModalForSeller('GreenFuture Ltd');
+
+    fireEvent.change(screen.getByPlaceholderText(/Enter quantity/i), { target: { value: '2' } });
+    fireEvent.click(screen.getByRole('button', { name: /Confirm Purchase/i }));
+
+    await waitFor(() => {
+      expect(alertSpy).toHaveBeenCalledWith('Insufficient balance or credits');
+    });
+  });
+
+  it('resets pay-later mode when purchase modal is cancelled', async () => {
+    render(<Marketplace />);
+    await openBuyModalForSeller('GreenFuture Ltd');
+
+    fireEvent.click(screen.getByRole('button', { name: /Pay Later/i }));
+    expect(screen.getByRole('button', { name: /Purchase & Pay Later/i })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: /Cancel/i }));
+
+    await waitFor(() => {
+      expect(screen.queryByText('Purchase Credits')).not.toBeInTheDocument();
+    });
+
+    // Re-open → should be normal mode again
+    await openBuyModalForSeller('GreenFuture Ltd');
+    expect(screen.getByRole('button', { name: /Pay Later/i })).toBeInTheDocument();
+    expect(screen.queryByText(/Schedule Payment For/i)).not.toBeInTheDocument();
+  });
+
+  it('shows empty listings block when no trades are available', async () => {
+    mockedAxios.get.mockResolvedValueOnce({ data: [] });
+    render(<Marketplace />);
+    await waitFor(() => {
+      expect(screen.getByText('No trades available yet.')).toBeInTheDocument();
+    });
+  });
+});

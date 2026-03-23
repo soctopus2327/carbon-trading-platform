@@ -1,5 +1,6 @@
 const TradeListing = require("../models/TradeListing");
 const Company = require("../models/Company");
+const Transaction = require("../models/Transaction");
 const { COMPANY_STATUS } = require("../models/enums");
 
 // CREATE TRADE
@@ -16,10 +17,7 @@ exports.createTrade = async (req, res) => {
       return res.status(400).json({ message: "Quantity must be a positive number" });
     }
 
-    // Get seller company from DB
     const company = await Company.findById(req.user.company);
-    //console.log("REQ.USER:", req.user);
-    //console.log("COMPANY FIELD:", req.user.company);
     if (!company) {
       return res.status(404).json({ message: "Company not found" });
     }
@@ -30,12 +28,27 @@ exports.createTrade = async (req, res) => {
       });
     }
 
+    // Check carbonCredits (this was the main bug)
+    const availableCredits = company.carbonCredits || 0;
+    if (availableCredits < parsedQuantity) {
+      return res.status(400).json({ 
+        message: `Not enough carbon credits. You have ${availableCredits}, requested ${parsedQuantity}` 
+      });
+    }
+
+    // Create trade first
     const trade = await TradeListing.create({
       sellerCompany: req.user.company,
       pricePerCredit: parsedPrice,
       quantity: parsedQuantity,
       remainingQuantity: parsedQuantity
     });
+
+    // Deduct using atomic $inc (safest way)
+    await Company.findByIdAndUpdate(
+      req.user.company,
+      { $inc: { carbonCredits: -parsedQuantity } }
+    );
 
     res.status(201).json(trade);
 
@@ -45,30 +58,26 @@ exports.createTrade = async (req, res) => {
 };
 
 
-//GET ALL TRADES
+// GET ALL TRADES (unchanged)
 exports.getAllTrades = async (req, res) => {
   try {
-
     const trades = await TradeListing.find({
-  remainingQuantity: { $gt: 0 }
-}).populate("sellerCompany");
+      remainingQuantity: { $gt: 0 }
+    }).populate("sellerCompany");
 
     res.json(trades);
-
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
 
 
-//UPDATE TRADE
+// UPDATE TRADE
 exports.updateTrade = async (req, res) => {
   try {
     const trade = await TradeListing.findById(req.params.id);
-    if (!trade)
-      return res.status(404).json({ message: "Trade not found" });
+    if (!trade) return res.status(404).json({ message: "Trade not found" });
 
-    // Verify trade belongs to the requesting company
     if (trade.sellerCompany.toString() !== req.user.company.toString())
       return res.status(403).json({ message: "You can only update your own trades" });
 
@@ -82,47 +91,62 @@ exports.updateTrade = async (req, res) => {
       return res.status(400).json({ message: "Quantity must be a positive number" });
     }
 
+    const currentCommitted = trade.remainingQuantity || 0;
+    const difference = nextQuantity - currentCommitted;
+
+    if (difference > 0) {
+      // Need more credits
+      const seller = await Company.findById(trade.sellerCompany);
+      const available = seller?.carbonCredits || 0;
+      if (available < difference) {
+        return res.status(400).json({ 
+          message: `Not enough carbon credits. You have ${available}` 
+        });
+      }
+      await Company.findByIdAndUpdate(trade.sellerCompany, { $inc: { carbonCredits: -difference } });
+    } else if (difference < 0) {
+      // Free up credits
+      await Company.findByIdAndUpdate(trade.sellerCompany, { $inc: { carbonCredits: Math.abs(difference) } });
+    }
+
     const updatedTrade = await TradeListing.findByIdAndUpdate(
       req.params.id,
-      {
-        pricePerCredit: nextPrice,
-        quantity: nextQuantity,
-        remainingQuantity: nextQuantity
-      },
+      { pricePerCredit: nextPrice, quantity: nextQuantity, remainingQuantity: nextQuantity },
       { new: true }
     ).populate("sellerCompany");
 
     res.json(updatedTrade);
-
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
 
 
-//DELETE TRADE
+// DELETE TRADE
 exports.deleteTrade = async (req, res) => {
   try {
     const trade = await TradeListing.findById(req.params.id);
+    if (!trade) return res.status(404).json({ message: "Trade not found" });
 
-    if (!trade)
-      return res.status(404).json({ message: "Trade not found" });
-
-    // Verify trade belongs to the requesting company
     if (trade.sellerCompany.toString() !== req.user.company.toString())
       return res.status(403).json({ message: "You can only delete your own trades" });
+
+    // Return reserved carbon credits (this was the second bug)
+    await Company.findByIdAndUpdate(
+      trade.sellerCompany,
+      { $inc: { carbonCredits: trade.remainingQuantity || 0 } }
+    );
 
     await TradeListing.findByIdAndDelete(req.params.id);
 
     res.json({ message: "Trade deleted successfully" });
-
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
 
 
-//pay later
+// PAY LATER (unchanged)
 exports.payLater = async (req, res) => {
   try {
     const { tradeId, quantity, useDiscount, payLaterDate } = req.body;
@@ -135,7 +159,6 @@ exports.payLater = async (req, res) => {
 
     if (!buyer || !seller) return res.status(404).json({ message: "Company not found" });
 
-    // check available credits
     const availableCredits = Math.min(trade.remainingQuantity, trade.quantity);
     if (availableCredits < quantity) {
       return res.status(400).json({ message: "Not enough credits available" });
@@ -152,7 +175,6 @@ exports.payLater = async (req, res) => {
 
     const totalAmount = quantity * trade.pricePerCredit;
 
-    // Create transaction with status PENDING
     const transaction = await Transaction.create({
       buyerCompany: buyer._id,
       sellerCompany: seller._id,
@@ -165,16 +187,11 @@ exports.payLater = async (req, res) => {
       payLaterDate,
     });
 
-    // mark buyer as having pay later
     buyer.payLaterUsed = true;
     buyer.payLaterDate = payLaterDate;
-
     await buyer.save();
 
-    res.json({
-      message: "Pay later scheduled",
-      transaction,
-    });
+    res.json({ message: "Pay later scheduled", transaction });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: err.message });

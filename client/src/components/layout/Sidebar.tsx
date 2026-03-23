@@ -41,7 +41,7 @@ export default function Sidebar({ setPage, page, onLogout }: SidebarProps) {
   const isAlliancePage = page.startsWith("alliance");
 
   return (
-    <aside className="w-64 bg-gradient-to-b from-green-600 to-green-700 text-white border-r border-green-800 flex flex-col shrink-0 h-screen">
+    <aside className="w-64 bg-gradient-to-b from-green-600 to-green-700 text-white border-r border-green-800 flex flex-col shrink-0 h-screen sticky top-0">
 
       {/* Top Section */}
       <div className="flex-1 flex flex-col overflow-hidden">

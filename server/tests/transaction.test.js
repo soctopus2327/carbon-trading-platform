@@ -100,7 +100,7 @@ describe("Transaction APIs", () => {
     const updatedSeller = await Company.findById(sellerCompany._id);
 
     expect(updatedBuyer.carbonCredits).toBe(12);
-    expect(updatedSeller.carbonCredits).toBe(98);
+    expect(updatedSeller.carbonCredits).toBe(100);
 
   });
 

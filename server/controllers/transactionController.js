@@ -143,7 +143,7 @@ exports.executeTransaction = async (req, res) => {
     }
 
     // Credits transfer happens immediately in both cases
-    seller.carbonCredits -= parsedQuantity;
+    // seller.carbonCredits -= parsedQuantity;
     buyer.carbonCredits += parsedQuantity;
 
     const nextCredits = availableCredits - parsedQuantity;

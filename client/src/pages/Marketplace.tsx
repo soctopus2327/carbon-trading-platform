@@ -45,7 +45,6 @@ export default function Marketplace() {
 
   const [buyingTrade, setBuyingTrade] = useState<Trade | null>(null);
   const [buyQuantity, setBuyQuantity] = useState("");
-  // const [payLaterDate, setPayLaterDate] = useState("");
   const [payLaterMode, setPayLaterMode] = useState(false);
   const [payLaterDate, setPayLaterDate] = useState("");
   const [useDiscount, setUseDiscount] = useState(false);
@@ -105,7 +104,7 @@ export default function Marketplace() {
       }
     } catch (err: any) {
       console.error("Error adding trade", err);
-      alert(err.response?.data?.error || "Failed to add trade");
+      alert(err.response?.data?.message || err.response?.data?.error || "Failed to add trade");
     }
   };
 
@@ -119,7 +118,7 @@ export default function Marketplace() {
       fetchTrades();
     } catch (err: any) {
       console.error("Error deleting trade", err);
-      alert(err.response?.data?.error || "Failed to delete trade");
+      alert(err.response?.data?.message || err.response?.data?.error || "Failed to delete trade");
     }
   };
 
@@ -127,7 +126,7 @@ export default function Marketplace() {
     setEditingId(trade._id);
     setEditForm({
       pricePerCredit: String(trade.pricePerCredit),
-      quantity: String(trade.quantity),
+      quantity: String(trade.remainingQuantity ?? trade.quantity),
     });
   };
 
@@ -154,63 +153,10 @@ export default function Marketplace() {
       }
     } catch (err: any) {
       console.error("Error updating trade", err);
-      alert(err.response?.data?.error || "Failed to update trade");
+      alert(err.response?.data?.message || err.response?.data?.error || "Failed to update trade");
     }
   };
 
-  // const executePurchase = async () => {
-  //   if (!buyingTrade) return;
-
-  //   if (!buyQuantity || Number(buyQuantity) <= 0) {
-  //     alert("Enter a valid quantity");
-  //     return;
-  //   }
-
-  //   if (payLaterMode && !payLaterDate) {
-  //     alert("Please select a pay later date");
-  //     return;
-  //   }
-  //   try {
-  //     const token = localStorage.getItem("token");
-  //     const response = await axios.post(
-  //       "http://localhost:5000/transactions/execute",
-  //       {
-  //         tradeId: buyingTrade._id,
-  //         quantity: Number(buyQuantity),
-  //         useDiscount,
-  //         payLater: payLaterMode,
-  //         payLaterDate: payLaterMode ? payLaterDate : null,
-  //       },
-  //       { headers: { Authorization: `Bearer ${token}` } },
-  //     );
-
-  //     const { coinsEarned } = response.data;
-
-  //     alert("Purchase successful!");
-
-  //     const updatedPoints =
-  //       coinsBalance - (useDiscount ? 100 : 0) + coinsEarned;
-  //     const updatedUser = {
-  //       ...user,
-  //       points: updatedPoints,
-  //       coins: updatedPoints,
-  //     };
-  //     setUser(updatedUser);
-  //     localStorage.setItem("user", JSON.stringify(updatedUser));
-
-  //     setBuyingTrade(null);
-  //     setBuyQuantity("");
-  //     setUseDiscount(false);
-
-  //     fetchTrades();
-  //   } catch (err: any) {
-  //     const errorMessage =
-  //       err.response?.data?.message ||
-  //       err.response?.data?.error ||
-  //       "Transaction failed";
-  //     alert(errorMessage);
-  //   }
-  // };
   const executePurchase = async () => {
     if (!buyingTrade) return;
 
@@ -220,7 +166,6 @@ export default function Marketplace() {
       return;
     }
 
-    // Validate pay later date if pay later mode is enabled
     if (payLaterMode) {
       if (!payLaterDate) {
         alert("Please select a pay later date");
@@ -242,7 +187,6 @@ export default function Marketplace() {
           quantity: quantityNum,
           useDiscount,
           payLater: payLaterMode,
-          // Send null if pay later is disabled
           payLaterDate: payLaterMode
             ? new Date(payLaterDate).toISOString()
             : null,
@@ -250,17 +194,15 @@ export default function Marketplace() {
         { headers: { Authorization: `Bearer ${token}` } },
       );
 
-      // Alert success
       alert(
         payLaterMode
           ? `Credits received! Payment reminder will be sent on ${new Date(payLaterDate).toLocaleDateString()}`
           : "Purchase successful!",
       );
 
-      // Update local user coins/points
       const { coinsEarned } = response.data;
       const updatedPoints =
-        coinsBalance - (useDiscount ? 100 : 0) + coinsEarned;
+        coinsBalance - (useDiscount ? 100 : 0) + (coinsEarned ?? 0);
       const updatedUser = {
         ...user,
         points: updatedPoints,
@@ -269,7 +211,6 @@ export default function Marketplace() {
       setUser(updatedUser);
       localStorage.setItem("user", JSON.stringify(updatedUser));
 
-      // Reset modal states
       setBuyingTrade(null);
       setBuyQuantity("");
       setUseDiscount(false);
@@ -286,6 +227,7 @@ export default function Marketplace() {
       alert(errorMessage);
     }
   };
+
   const summary = useMemo(() => {
     const availableListings = trades.filter(
       (trade) => (trade.remainingQuantity ?? trade.quantity) > 0,
@@ -310,6 +252,7 @@ export default function Marketplace() {
       compact
     >
       <div className="space-y-5 h-full">
+        {/* Summary Cards */}
         <section className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           <MetricCard
             label="Open Listings"
@@ -323,6 +266,7 @@ export default function Marketplace() {
           <MetricCard label="My Coins" value={String(summary.myCoins)} />
         </section>
 
+        {/* Tabs */}
         <section className="bg-white border border-gray-200 rounded-2xl p-2 inline-flex gap-2 shadow-sm">
           <TabButton
             label="Buy Credits"
@@ -342,6 +286,7 @@ export default function Marketplace() {
           </div>
         )}
 
+        {/* BUY TAB - Now disables own listings */}
         {activeTab === "buy" && !loading && (
           <section className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
             <div className="flex items-end justify-between mb-4">
@@ -361,6 +306,8 @@ export default function Marketplace() {
               <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-4">
                 {trades.map((trade) => {
                   const available = trade.remainingQuantity ?? trade.quantity;
+                  const isOwnTrade = user?.company && trade.sellerCompany?._id === user.company;
+
                   return (
                     <article
                       key={trade._id}
@@ -377,6 +324,7 @@ export default function Marketplace() {
 
                       <h3 className="font-semibold text-gray-900">
                         {trade.sellerCompany?.name || "Company"}
+                        {isOwnTrade && <span className="text-xs ml-2 text-amber-600">(Your Listing)</span>}
                       </h3>
                       <p className="text-2xl font-bold text-emerald-700 mt-2">
                         INR {trade.pricePerCredit}/credit
@@ -385,12 +333,21 @@ export default function Marketplace() {
                         {available} credits available
                       </p>
 
-                      <button
-                        onClick={() => setBuyingTrade(trade)}
-                        className="mt-4 w-full bg-emerald-600 text-white py-2 rounded-lg hover:bg-emerald-700 transition font-semibold text-sm"
-                      >
-                        Buy Credits
-                      </button>
+                      {isOwnTrade ? (
+                        <button
+                          disabled
+                          className="mt-4 w-full bg-gray-300 text-gray-500 py-2 rounded-lg cursor-not-allowed font-semibold text-sm"
+                        >
+                          Can't trade with self
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => setBuyingTrade(trade)}
+                          className="mt-4 w-full bg-emerald-600 text-white py-2 rounded-lg hover:bg-emerald-700 transition font-semibold text-sm"
+                        >
+                          Buy Credits
+                        </button>
+                      )}
                     </article>
                   );
                 })}
@@ -399,11 +356,13 @@ export default function Marketplace() {
           </section>
         )}
 
+        {/* SELL TAB - Compact grid (unchanged) */}
         {activeTab === "sell" && !loading && (
-          <section className="grid xl:grid-cols-[1fr_1.6fr] gap-4">
+          <div className="space-y-6">
+            {/* Create Listing - Full width */}
             <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
               <h2 className="text-xl font-bold text-gray-900 mb-4">
-                Create Listing
+                Create New Listing
               </h2>
 
               <form onSubmit={addTrade} className="space-y-4">
@@ -424,7 +383,7 @@ export default function Marketplace() {
 
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-1">
-                    Quantity
+                    Quantity (Carbon Credits)
                   </label>
                   <input
                     type="number"
@@ -441,11 +400,12 @@ export default function Marketplace() {
                   type="submit"
                   className="w-full bg-emerald-600 text-white py-2.5 rounded-lg hover:bg-emerald-700 transition font-semibold"
                 >
-                  Create Trade
+                  Create Trade Listing
                 </button>
               </form>
             </div>
 
+            {/* My Active Listings - Small boxes side-by-side */}
             <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
               <h2 className="text-xl font-bold text-gray-900 mb-4">
                 My Active Listings
@@ -454,90 +414,96 @@ export default function Marketplace() {
               {myTrades.length === 0 ? (
                 <EmptyBlock text="You have not created any listings yet." />
               ) : (
-                <div className="space-y-3 max-h-[560px] overflow-auto pr-1">
-                  {myTrades.map((trade) => (
-                    <div
-                      key={trade._id}
-                      className="rounded-xl border border-gray-200 p-4"
-                    >
-                      {editingId === trade._id ? (
-                        <form
-                          onSubmit={updateTrade}
-                          className="grid md:grid-cols-2 gap-3"
-                        >
-                          <input
-                            type="number"
-                            value={editForm.pricePerCredit}
-                            onChange={(e) =>
-                              setEditForm({
-                                ...editForm,
-                                pricePerCredit: e.target.value,
-                              })
-                            }
-                            className="border border-gray-300 rounded-lg px-3 py-2"
-                            required
-                          />
-                          <input
-                            type="number"
-                            value={editForm.quantity}
-                            onChange={(e) =>
-                              setEditForm({
-                                ...editForm,
-                                quantity: e.target.value,
-                              })
-                            }
-                            className="border border-gray-300 rounded-lg px-3 py-2"
-                            required
-                          />
-                          <button
-                            type="submit"
-                            className="bg-emerald-600 text-white py-2 rounded-lg text-sm font-semibold hover:bg-emerald-700"
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-h-[560px] overflow-auto pr-1">
+                  {myTrades.map((trade) => {
+                    const available = trade.remainingQuantity ?? trade.quantity;
+
+                    return (
+                      <div
+                        key={trade._id}
+                        className="rounded-xl border border-gray-200 p-4 hover:shadow-md transition"
+                      >
+                        {editingId === trade._id ? (
+                          <form
+                            onSubmit={updateTrade}
+                            className="grid md:grid-cols-2 gap-3"
                           >
-                            Save
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setEditingId(null)}
-                            className="bg-gray-200 text-gray-800 py-2 rounded-lg text-sm font-semibold hover:bg-gray-300"
-                          >
-                            Cancel
-                          </button>
-                        </form>
-                      ) : (
-                        <div className="flex flex-wrap items-center justify-between gap-3">
-                          <div>
-                            <p className="text-lg font-bold text-emerald-700">
-                              INR {trade.pricePerCredit}/credit
-                            </p>
-                            <p className="text-sm text-gray-600">
-                              {trade.quantity} credits available
-                            </p>
-                          </div>
-                          <div className="flex gap-2">
+                            <input
+                              type="number"
+                              value={editForm.pricePerCredit}
+                              onChange={(e) =>
+                                setEditForm({
+                                  ...editForm,
+                                  pricePerCredit: e.target.value,
+                                })
+                              }
+                              className="border border-gray-300 rounded-lg px-3 py-2"
+                              required
+                            />
+                            <input
+                              type="number"
+                              value={editForm.quantity}
+                              onChange={(e) =>
+                                setEditForm({
+                                  ...editForm,
+                                  quantity: e.target.value,
+                                })
+                              }
+                              className="border border-gray-300 rounded-lg px-3 py-2"
+                              required
+                            />
                             <button
-                              onClick={() => startEdit(trade)}
-                              className="px-3 py-2 rounded-lg text-sm font-semibold bg-blue-600 text-white hover:bg-blue-700"
+                              type="submit"
+                              className="bg-emerald-600 text-white py-2 rounded-lg text-sm font-semibold hover:bg-emerald-700"
                             >
-                              Edit
+                              Save Changes
                             </button>
                             <button
-                              onClick={() => deleteTrade(trade._id)}
-                              className="px-3 py-2 rounded-lg text-sm font-semibold bg-red-600 text-white hover:bg-red-700"
+                              type="button"
+                              onClick={() => setEditingId(null)}
+                              className="bg-gray-200 text-gray-800 py-2 rounded-lg text-sm font-semibold hover:bg-gray-300"
                             >
-                              Delete
+                              Cancel
                             </button>
+                          </form>
+                        ) : (
+                          <div className="flex flex-col justify-between h-full">
+                            <div>
+                              <p className="text-lg font-bold text-emerald-700">
+                                INR {trade.pricePerCredit}/credit
+                              </p>
+                              <p className="text-sm text-gray-600 mt-1">
+                                {available} credits available
+                              </p>
+                            </div>
+
+                            <div className="flex gap-2 mt-4">
+                              <button
+                                onClick={() => startEdit(trade)}
+                                className="flex-1 px-3 py-2 rounded-lg text-sm font-semibold bg-blue-600 text-white hover:bg-blue-700"
+                              >
+                                Edit
+                              </button>
+                              <button
+                                onClick={() => deleteTrade(trade._id)}
+                                className="flex-1 px-3 py-2 rounded-lg text-sm font-semibold bg-red-600 text-white hover:bg-red-700"
+                              >
+                                Delete
+                              </button>
+                            </div>
                           </div>
-                        </div>
-                      )}
-                    </div>
-                  ))}
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </div>
-          </section>
+          </div>
         )}
       </div>
 
+      {/* Buy Modal (unchanged - will never open for own trades) */}
       {buyingTrade && (
         <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-6">
           <div className="w-full max-w-md bg-white rounded-2xl border border-gray-200 shadow-xl p-6">
@@ -567,7 +533,7 @@ export default function Marketplace() {
                 <input
                   type="date"
                   value={payLaterDate}
-                  min={new Date().toISOString().split("T")[0]} // prevent past dates
+                  min={new Date().toISOString().split("T")[0]}
                   onChange={(e) => setPayLaterDate(e.target.value)}
                   className="w-full border border-gray-300 rounded-lg px-3 py-2.5 mb-3"
                 />
@@ -615,6 +581,8 @@ export default function Marketplace() {
                   setBuyingTrade(null);
                   setPayLaterMode(false);
                   setPayLaterDate("");
+                  setBuyQuantity("");
+                  setUseDiscount(false);
                 }}
                 className="flex-1 bg-gray-200 text-gray-800 py-2 rounded-lg hover:bg-gray-300 font-semibold"
               >
