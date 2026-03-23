@@ -1,0 +1,61 @@
+id,title,url,source_type,region,publication_date,reliability_rating
+R001,2006 IPCC Guidelines for National Greenhouse Gas Inventories (download hub),https://www.ipcc-nggip.iges.or.jp/public/2006gl/,standard,Global,2006,A
+R002,2019 Refinement to the 2006 IPCC Guidelines (download hub),https://www.ipcc-nggip.iges.or.jp/public/2019rf/index.html,standard,Global,2019,A
+R003,IPCC AR6 Synthesis Report (Longer Report PDF),https://www.ipcc.ch/report/ar6/syr/downloads/report/IPCC_AR6_SYR_LongerReport.pdf,journal,Global,2023-03,A
+R004,Paris Agreement (English PDF),https://unfccc.int/sites/default/files/english_paris_agreement.pdf,government,Global,2015-12,A
+R005,Article 6.4 mechanism rules (Decision 3/CMA.3 PDF),https://unfccc.int/sites/default/files/resource/cma3_auv_12b_PA_6.4.pdf,government,Global,2021-11,A
+R006,Enhanced Transparency Framework MPGs (Decision 18/CMA.1 PDF),https://unfccc.int/sites/default/files/resource/cma2018_03a01E.pdf,government,Global,2019-03,A
+R007,UNFCCC Article 6.4 Supervisory Body rules & regulations (landing),https://unfccc.int/process-and-meetings/bodies/constituted-bodies/article-64-supervisory-body/rules-and-regulations,government,Global,2024,A
+R008,UNFCCC NDC Registry (public registry),https://unfccc.int/NDCREG,government,Global,2016,A
+R009,GHG Protocol Corporate Standard (Revised Edition PDF),https://ghgprotocol.org/sites/default/files/standards/ghg-protocol-revised.pdf,guideline,Global,2004,A
+R010,GHG Protocol Scope 3 Standard (PDF),https://ghgprotocol.org/sites/default/files/standards/Corporate-Value-Chain-Accounting-Reporing-Standard_041613_2.pdf,guideline,Global,2011-04,A
+R011,GHG Protocol Project Protocol (PDF),https://ghgprotocol.org/sites/default/files/standards/ghg_project_accounting.pdf,guideline,Global,2005,A
+R012,GHG Protocol Policy and Action Standard (PDF),https://ghgprotocol.org/sites/default/files/standards/Policy%20and%20Action%20Standard.pdf,guideline,Global,2014,A
+R013,GHG Protocol Mitigation Goal Standard (PDF),https://ghgprotocol.org/sites/default/files/standards/Mitigation_Goal_Standard.pdf,guideline,Global,2014,A
+R014,GHG Protocol Product Life Cycle Standard (PDF),https://pdf.wri.org/ghgp_product_life_cycle_standard.pdf,guideline,Global,2011,A
+R015,GHG Protocol Land Sector and Removals Standard (PDF),https://ghgprotocol.org/sites/default/files/2026-01/Land-Sector-and-Removals-Standard.pdf,guideline,Global,2026-01-30,A
+R016,SBTi Corporate Net-Zero Standard (PDF),https://sciencebasedtargets.org/resources/files/Net-Zero-Standard.pdf,NGO,Global,2021,B
+R017,ICVCM Core Carbon Principles + Assessment Framework (CCP Book PDF),https://icvcm.org/wp-content/uploads/2024/02/CCP-Book-V2-FINAL-6Feb24-compressed.pdf,NGO,Global,2024-02,B
+R018,ICVCM Assessment Framework (Section 4 PDF),https://icvcm.org/wp-content/uploads/2024/02/CCP-Section-4-V2-FINAL-6Feb24.pdf,NGO,Global,2024-02,B
+R019,VCMI Claims Code of Practice (Version 3.0 PDF),https://vcmintegrity.org/wp-content/uploads/2025/04/VCMI-Claims-Code-of-Practice-April-2025-Version-3.0.pdf,NGO,Global,2025-04-30,B
+R020,VCMI Claims Code Background Document (Nov 2023 PDF),https://vcmintegrity.org/wp-content/uploads/2023/11/Claims-Code-Background-Document-November-2023.pdf,NGO,Global,2023-11,B
+R021,Verra VCS Program Guide v5.0 (PDF),https://verra.org/documents/vcs-program-guide-v5-0/,standard,Global,2025-12-16,B
+R022,Verra VCS Standard v5.0 (PDF),https://verra.org/documents/vcs-standard-v5-0/,standard,Global,2025-12-16,B
+R023,Verra VCS Methodology Requirements v5.0 (PDF),https://verra.org/documents/vcs-methodology-requirements-v5-0/,standard,Global,2025-12-16,B
+R024,Gold Standard Principles & Requirements (Core Document PDF),https://globalgoals.goldstandard.org/standards/101_V2.1_PAR_Principles-Requirements.pdf,standard,Global,2025-01,B
+R025,American Carbon Registry Standard v8.0 (PDF),https://acrcarbon.org/wp-content/uploads/2023/10/ACR-Standard-v8.0.pdf,standard,Global,2023-07,B
+R026,Climate Action Reserve Program Manual (PDF),https://www.climateactionreserve.org/wp-content/uploads/2023/12/Climate-Action-Reserve-Program-Manual.pdf,standard,Global,2023-12,B
+R027,ART TREES Standard (PDF),https://www.artredd.org/wp-content/uploads/2021/12/TREES-2.0-Standard.pdf,standard,Global,2021-12,B
+R028,Plan Vivo Standard (PDF),https://www.planvivo.org/sites/default/files/publications/Plan_Vivo_Standard_2013.pdf,standard,Global,2013,B
+R029,ICAO CORSIA Emissions Unit Eligibility Criteria (EUC PDF),https://www.icao.int/environmental-protection/CORSIA/Documents/ICAO_Document_09.pdf,government,Global,2019,A
+R030,World Bank State and Trends of Carbon Pricing 2025,https://openknowledge.worldbank.org/entities/publication/e5f6e755-e6a6-4d2c-927a-23b5cc8a9b03,government,Global,2025-06-10,A
+R031,World Bank Carbon Pricing Dashboard,https://carbonpricingdashboard.worldbank.org/,dataset,Global,2026,A
+R032,EU Carbon Market Report 2024,https://climate.ec.europa.eu/document/download/92ec0ab3-24cf-4814-ad59-81c15e310bea_en?filename=2024_carbon_market_report_en.pdf,government,EU,2024-11-19,A
+R033,IOSCO Final Report on Voluntary Carbon Markets (PDF),https://www.iosco.org/library/pubdocs/pdf/IOSCOPD774.pdf,government,Global,2024-08,A
+R034,US EPA eGRID Detailed Data,https://www.epa.gov/egrid/detailed-data,dataset,US,2025-06,A
+R035,US EPA Greenhouse Gas Equivalencies Calculator,https://www.epa.gov/energy/greenhouse-gas-equivalencies-calculator,calculator,US,2026-02-05,A
+R036,US EPA Simplified GHG Emissions Calculator,https://www.epa.gov/climateleadership/simplified-ghg-emissions-calculator,calculator,US,2026-01-05,A
+R037,UK Government GHG Conversion Factors 2025,https://www.gov.uk/government/publications/greenhouse-gas-reporting-conversion-factors-2025,government,UK,2025-06-10,A
+R038,UK GHG Conversion Factors 2025 (full set XLSX),https://assets.publishing.service.gov.uk/media/6846a4f55e92539572806125/ghg-conversion-factors-2025-full-set.xlsx,dataset,UK,2025-06,A
+R039,EDGAR (JRC) main site,https://edgar.jrc.ec.europa.eu/,dataset,Global,2025,A
+R040,EDGAR Global GHG Emissions dataset 2025 release page,https://edgar.jrc.ec.europa.eu/dataset_ghg2025,dataset,Global,2025,A
+R041,FAOSTAT (data portal),https://www.fao.org/faostat/,dataset,Global,2026,A
+R042,FAOSTAT emissions intensities methodology (PDF),https://files-faostat.fao.org/production/EI/EI_e.pdf,government,Global,2025-10,A
+R043,Our World in Data CO2 & GHG dataset repository (GitHub),https://github.com/owid/co2-data,dataset,Global,2025-12,B
+R044,Climate Watch data portal,https://www.climatewatchdata.org/,dataset,Global,2026,B
+R045,Berkeley Voluntary Registry Offsets Database (VROD landing),https://gspp.berkeley.edu/berkeley-carbon-trading-project/offsets-database,dataset,Global,2025-12,A
+R046,VROD calculations details (PDF),https://gspp.berkeley.edu/assets/uploads/page/VROD-Calculations.pdf,guideline,Global,2024-05-12,A
+R047,VROD scopes & types (PDF),https://gspp.berkeley.edu/assets/uploads/page/VROD-ScopesTypes.pdf,guideline,Global,2026-01-21,B
+R048,CarbonPlan OffsetsDB (web tool),https://carbonplan.org/research/offsets-db,dataset,Global,2024-02,B
+R049,OffsetsDB data access page (CSV/Parquet + citation),https://offsets-db-data.readthedocs.io/en/latest/data-access.html,dataset,Global,2026-03,B
+R050,OffsetsDB terms of data access,https://offsets-db-data.readthedocs.io/en/latest/TERMS-OF-DATA-ACCESS.html,guideline,Global,2026-02-25,B
+R051,Nature Scientific Data: open-access database of offset project boundaries,https://www.nature.com/articles/s41597-025-04868-2,journal,Global,2025,A
+R052,CarbonPlan blog: OffsetsDB project geometries release,https://carbonplan.org/blog/offsetsdb-project-geometries,NGO,Global,2026-01-14,B
+R053,Synopsis: Carbon Offset Guide (PDF),https://www.offsetguide.org/wp-content/uploads/2020/03/Carbon-Offset-Guide_3122020.pdf,NGO,Global,2020-03,B
+R054,EU report: How additional is the CDM? (PDF),https://climate.ec.europa.eu/system/files/2017-04/clean_dev_mechanism_en.pdf,government,EU/Global,2016-03,A
+R055,Nature Communications: systematic assessment of achieved emission reductions,https://www.nature.com/articles/s41467-024-53645-z,journal,Global,2024-11,A
+R056,Nature Communications: demand for low-quality offsets by major companies,https://www.nature.com/articles/s41467-024-51151-w,journal,Global,2024-08,A
+R057,PMC: negligible role of offsetting in corporate climate strategies,https://pmc.ncbi.nlm.nih.gov/articles/PMC12423307/,journal,Global,2025-09,A
+R058,ScienceDirect OA: avoiding carbon leakage from nature-based offsets by design,https://www.sciencedirect.com/science/article/pii/S2590332223002580,journal,Global,2023-07-21,A
+R059,IEA Net Zero by 2050 roadmap (PDF),https://iea.blob.core.windows.net/assets/deebef5d-0c34-4539-9d0c-10b13d840027/NetZeroby2050-ARoadmapfortheGlobalEnergySector_CORR.pdf,government,Global,2021-05,B
+R060,IMO 2023 Strategy on Reduction of GHG emissions from ships (PDF),https://wwwcdn.imo.org/localresources/en/MediaCentre/PressBriefings/Documents/2023%20Strategy%20%20on%20Reduction%20of%20GHG%20emissions%20from%20ships%20as%20adopted%20subject%20to%20any%20final%20editorials_.pdf,government,Global,2023-07-07,A
