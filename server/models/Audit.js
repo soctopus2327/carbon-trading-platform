@@ -22,6 +22,49 @@ const auditSchema = new mongoose.Schema({
 
     report: String,
 
+    status: {
+        type: String,
+        enum: ["PENDING", "GENERATED", "FAILED"],
+        default: "PENDING"
+    },
+
+    reportPeriod: String,
+
+    sourceDocumentPath: String,
+
+    sourceDocumentName: String,
+
+    summary: String,
+
+    findings: {
+        type: [mongoose.Schema.Types.Mixed],
+        default: []
+    },
+
+    recommendations: {
+        type: [mongoose.Schema.Types.Mixed],
+        default: []
+    },
+
+    riskLevel: {
+        type: String,
+        default: "MEDIUM"
+    },
+
+    limitations: {
+        type: [String],
+        default: []
+    },
+
+    meta: {
+        type: mongoose.Schema.Types.Mixed,
+        default: {}
+    },
+
+    generatedAt: Date,
+
+    errorMessage: String,
+
     createdAt: {
 
         type: Date,

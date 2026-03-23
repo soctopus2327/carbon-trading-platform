@@ -1,4 +1,14 @@
 node_modules/
+
+# Environment files
 .env
-node_modules/
-.env
+.env.*
+!.env.example
+
+# Python artifacts from advisor module
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Advisor upload temp folder
+ai/uploads/
