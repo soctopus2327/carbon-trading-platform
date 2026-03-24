@@ -19,6 +19,7 @@ const allianceRoutes = require("./routes/allianceRoutes");
 const messageRoutes = require("./routes/messageRoutes");
 const advisorRoutes = require("./routes/advisorRoutes");
 const auditRoutes = require("./routes/auditRoutes");
+const payLaterRoutes = require("./routes/payLaterRoutes");
 
 dotenv.config();
 
@@ -37,6 +38,7 @@ app.use("/news", newsRoutes);
 app.use("/alliance", allianceRoutes);
 app.use("/advisor", advisorRoutes);
 app.use("/audit", auditRoutes);
+app.use("/pay-later", payLaterRoutes);
 async function createPlatformAdmin() {
   try {
     const existing = await User.findOne({ role: "PLATFORM_ADMIN" });

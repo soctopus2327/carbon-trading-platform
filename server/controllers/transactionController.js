@@ -109,11 +109,41 @@ exports.executeTransaction = async (req, res) => {
     const trade = await TradeListing.findById(tradeId);
     if (!trade) return res.status(404).json({ message: "Trade not found" });
 
+    // Debug: Check what we have
+    console.log("User company:", req.user.company);
+    console.log("Trade seller:", trade.sellerCompany);
+    console.log("User role:", req.user.role);
+
+    if (!req.user.company) {
+      return res.status(400).json({ 
+        message: "User is not assigned to a company",
+        detail: "Please create or join a company first"
+      });
+    }
+
+    if (!trade.sellerCompany) {
+      return res.status(400).json({ 
+        message: "Trade does not have a seller assigned",
+        detail: "Trade listing is incomplete"
+      });
+    }
+
     const buyer = await Company.findById(req.user.company);
     const seller = await Company.findById(trade.sellerCompany);
 
-    if (!buyer || !seller)
-      return res.status(404).json({ message: "Buyer or Seller not found" });
+    if (!buyer) {
+      return res.status(404).json({ 
+        message: "Buyer company not found",
+        detail: `Company ID: ${req.user.company}`
+      });
+    }
+
+    if (!seller) {
+      return res.status(404).json({ 
+        message: "Seller company not found",
+        detail: `Company ID: ${trade.sellerCompany}`
+      });
+    }
     if (buyer._id.toString() === seller._id.toString()) {
       return res.status(400).json({ message: "Cannot trade with yourself" });
     }

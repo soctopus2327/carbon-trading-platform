@@ -180,36 +180,74 @@ export default function Marketplace() {
 
     try {
       const token = localStorage.getItem("token");
-      const response = await axios.post(
-        "http://localhost:5000/transactions/execute",
-        {
-          tradeId: buyingTrade._id,
-          quantity: quantityNum,
-          useDiscount,
-          payLater: payLaterMode,
-          payLaterDate: payLaterMode
-            ? new Date(payLaterDate).toISOString()
-            : null,
-        },
-        { headers: { Authorization: `Bearer ${token}` } },
-      );
 
-      alert(
-        payLaterMode
-          ? `Credits received! Payment reminder will be sent on ${new Date(payLaterDate).toLocaleDateString()}`
-          : "Purchase successful!",
-      );
+      // Route to appropriate endpoint based on payment mode
+      if (payLaterMode) {
+        // Calculate days until payment date
+        const selectedDate = new Date(payLaterDate);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        selectedDate.setHours(0, 0, 0, 0);
+        const payLaterDays = Math.ceil(
+          (selectedDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
+        );
 
-      const { coinsEarned } = response.data;
-      const updatedPoints =
-        coinsBalance - (useDiscount ? 100 : 0) + (coinsEarned ?? 0);
-      const updatedUser = {
-        ...user,
-        points: updatedPoints,
-        coins: updatedPoints,
-      };
-      setUser(updatedUser);
-      localStorage.setItem("user", JSON.stringify(updatedUser));
+        const response = await axios.post(
+          "http://localhost:5000/pay-later/execute",
+          {
+            tradeId: buyingTrade._id,
+            quantity: quantityNum,
+            payLaterDays,
+          },
+          { headers: { Authorization: `Bearer ${token}` } },
+        );
+
+        const { buyerState } = response.data;
+        const updatedUser = {
+          ...user,
+          carbonCredits: buyerState.carbonCredits,
+          points: buyerState.creditBalance,
+          coins: buyerState.creditBalance,
+          currentPayLaterDebt: buyerState.currentPayLaterDebt,
+          payLaterLimit: buyerState.payLaterLimit,
+        };
+        setUser(updatedUser);
+        localStorage.setItem("user", JSON.stringify(updatedUser));
+
+        alert(
+          `✅ Pay Later Purchase Complete!\n\n` +
+          `💳 Credits Received: ${buyerState.carbonCredits}\n` +
+          `💰 Amount Owed: INR ${buyerState.currentPayLaterDebt.toFixed(2)}\n` +
+          `📊 Available Limit: INR ${buyerState.availableLimit.toFixed(2)}\n` +
+          `📅 Due Date: ${response.data.transaction.dueDate}`
+        );
+      } else {
+        // Regular immediate purchase
+        const response = await axios.post(
+          "http://localhost:5000/transactions/execute",
+          {
+            tradeId: buyingTrade._id,
+            quantity: quantityNum,
+            useDiscount,
+            payLater: false,
+            payLaterDate: null,
+          },
+          { headers: { Authorization: `Bearer ${token}` } },
+        );
+
+        alert("Purchase successful!");
+
+        const { coinsEarned } = response.data;
+        const updatedPoints =
+          coinsBalance - (useDiscount ? 100 : 0) + (coinsEarned ?? 0);
+        const updatedUser = {
+          ...user,
+          points: updatedPoints,
+          coins: updatedPoints,
+        };
+        setUser(updatedUser);
+        localStorage.setItem("user", JSON.stringify(updatedUser));
+      }
 
       setBuyingTrade(null);
       setBuyQuantity("");
@@ -222,6 +260,7 @@ export default function Marketplace() {
       console.error(err);
       const errorMessage =
         err.response?.data?.message ||
+        err.response?.data?.detail ||
         err.response?.data?.error ||
         "Transaction failed";
       alert(errorMessage);

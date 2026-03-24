@@ -76,6 +76,7 @@ export default function Sidebar({ setPage, page, onLogout }: SidebarProps) {
             />
           )}
 
+
           <NavItem
             label="Holdings & Retire"
             active={page === "holdings"}

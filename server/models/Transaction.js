@@ -66,6 +66,12 @@ const transactionSchema = new mongoose.Schema({
         default: null
     },
 
+    payLaterPaymentRef: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "PayLaterPayment",
+        default: null
+    },
+
     createdAt: {
 
         type: Date,
