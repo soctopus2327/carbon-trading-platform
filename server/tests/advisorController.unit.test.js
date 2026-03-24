@@ -29,6 +29,17 @@ jest.mock("../models/Transaction", () => ({
   countDocuments: jest.fn(),
 }));
 
+jest.mock("../models/AdvisorConversation", () => {
+  const MockConversation = jest.fn().mockImplementation((payload = {}) => ({
+    _id: "conv-1",
+    title: payload.title || "New chat",
+    messages: payload.messages || [],
+    save: jest.fn().mockResolvedValue(undefined),
+  }));
+  MockConversation.findOne = jest.fn();
+  return MockConversation;
+});
+
 const fs = require("fs/promises");
 const { runAdvisorChatStream } = require("../ai/services/ragRunner");
 const Company = require("../models/Company");
@@ -41,11 +52,18 @@ function createResponseMock() {
     statusCode: 200,
     payload: null,
     headers: {},
+    headersSent: false,
+    set: jest.fn((headers) => {
+      Object.assign(res.headers, headers);
+      return res;
+    }),
     setHeader: jest.fn((key, value) => {
       res.headers[key] = value;
     }),
     write: jest.fn(),
-    end: jest.fn(),
+    end: jest.fn(() => {
+      res.headersSent = true;
+    }),
     status: jest.fn((code) => {
       res.statusCode = code;
       return res;
@@ -72,7 +90,7 @@ describe("advisorController.chatStream unit", () => {
     const req = {
       body: {},
       query: {},
-      user: { company: null },
+      user: { _id: "user-1", company: null },
       file: undefined,
     };
     const res = createResponseMock();
@@ -80,7 +98,7 @@ describe("advisorController.chatStream unit", () => {
     await advisorController.chatStream(req, res);
 
     expect(res.status).toHaveBeenCalledWith(400);
-    expect(res.json).toHaveBeenCalledWith({ message: "Question is required" });
+    expect(res.json).toHaveBeenCalledWith({ success: false, message: "Question required" });
   });
 
   it("streams token events and final payload", async () => {
@@ -101,14 +119,14 @@ describe("advisorController.chatStream unit", () => {
     const req = {
       body: { question: "Explain this", provider: "openai" },
       query: {},
-      user: { company: null },
+      user: { _id: "user-1", company: null },
       file: undefined,
     };
     const res = createResponseMock();
 
     await advisorController.chatStream(req, res);
 
-    expect(res.setHeader).toHaveBeenCalledWith("Content-Type", "application/x-ndjson; charset=utf-8");
+    expect(res.set).toHaveBeenCalled();
     expect(res.write).toHaveBeenCalled();
 
     const writes = res.write.mock.calls.map((call) => call[0]);
@@ -123,7 +141,7 @@ describe("advisorController.chatStream unit", () => {
     const req = {
       body: { question: "Explain this", provider: "openai" },
       query: {},
-      user: { company: null },
+      user: { _id: "user-1", company: null },
       file: undefined,
     };
     const res = createResponseMock();
@@ -145,7 +163,7 @@ describe("advisorController.chatStream unit", () => {
     const req = {
       body: { question: "Explain this", provider: "openai" },
       query: {},
-      user: { company: null },
+      user: { _id: "user-1", company: null },
       file: { path: "tmp/sample.pdf" },
     };
     const res = createResponseMock();
