@@ -76,7 +76,12 @@ export default function CompanyRegister({ onSuccess }: CompanyRegisterProps) {
       }
 
     } catch (err: any) {
-      setError(err.response?.data || "Failed to login");
+      // setError(err.response?.data || "Failed to login");
+      setError(
+        err.response?.data?.error ||
+        err.response?.data?.message ||
+        "Invalid email or password"
+      );
       console.error("Login error:", err);
     } finally {
       setLoading(false);
@@ -85,7 +90,7 @@ export default function CompanyRegister({ onSuccess }: CompanyRegisterProps) {
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    
+
     if (isLogin) {
       return handleLogin(e);
     }
@@ -136,7 +141,7 @@ export default function CompanyRegister({ onSuccess }: CompanyRegisterProps) {
         localStorage.setItem("role", response.data.user.role);
 
         alert("Company registered successfully!");
-        
+
         // Call onSuccess callback if provided, otherwise reload
         if (onSuccess) {
           onSuccess();
@@ -190,11 +195,10 @@ export default function CompanyRegister({ onSuccess }: CompanyRegisterProps) {
                   companyType: "INDIVIDUAL",
                 });
               }}
-              className={`py-2.5 rounded-lg font-semibold transition ${
-                !isLogin
+              className={`py-2.5 rounded-lg font-semibold transition ${!isLogin
                   ? "bg-emerald-600 text-white shadow-sm"
                   : "text-slate-700 hover:text-slate-900"
-              }`}
+                }`}
             >
               Register
             </button>
@@ -211,11 +215,10 @@ export default function CompanyRegister({ onSuccess }: CompanyRegisterProps) {
                   companyType: "INDIVIDUAL",
                 });
               }}
-              className={`py-2.5 rounded-lg font-semibold transition ${
-                isLogin
+              className={`py-2.5 rounded-lg font-semibold transition ${isLogin
                   ? "bg-emerald-600 text-white shadow-sm"
                   : "text-slate-700 hover:text-slate-900"
-              }`}
+                }`}
             >
               Login
             </button>

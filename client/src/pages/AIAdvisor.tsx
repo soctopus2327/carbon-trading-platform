@@ -1,3 +1,4 @@
+// AIAdvisor.tsx
 import { useEffect, useRef, useState, type ChangeEvent, type KeyboardEvent } from "react";
 import PageLayout from "../components/layout/PageLayout";
 import {
@@ -11,31 +12,34 @@ import {
   FileText,
   X,
   Loader2,
+  Plus,
+  MessageSquare,
+  RotateCcw,
+  Zap,
 } from "lucide-react";
 import { fetchAdvisorInsights, streamAdvisorMessage } from "../api/advisorApi";
 
-type AIAdvisorProps = {
-  onLogout?: () => void;
-};
+type AIAdvisorProps = { onLogout?: () => void };
 
 type ChatMessage = {
-  id: number;
+  id: number | string;
   role: "assistant" | "user";
   text: string;
   meta: string;
+};
+
+type Conversation = {
+  _id: string;
+  title: string;
+  lastActive: string;
+  messageCount: number;
 };
 
 const starterMessages: ChatMessage[] = [
   {
     id: 1,
     role: "assistant",
-    text: "Good morning. I reviewed your latest profile and found opportunities in offset mix, timing, and retirement strategy.",
-    meta: "AI Advisor",
-  },
-  {
-    id: 2,
-    role: "assistant",
-    text: "Ask me for a 30-day action plan and I will break it into low-risk and high-impact steps.",
+    text: "Hello! I'm your AI Advisor. How can I help you today?",
     meta: "AI Advisor",
   },
 ];
@@ -53,9 +57,12 @@ export default function AIAdvisor({ onLogout: _onLogout }: AIAdvisorProps) {
   const preferredProvider: "openai" | "lmstudio" = "lmstudio";
 
   const [messageInput, setMessageInput] = useState("");
-  const [messages, setMessages] = useState<ChatMessage[]>(starterMessages);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [attachedFile, setAttachedFile] = useState<File | null>(null);
   const [isSending, setIsSending] = useState(false);
+  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
+  const [currentTitle, setCurrentTitle] = useState("New Chat");
   const [insightCards, setInsightCards] = useState<Array<{ type: string; text: string }>>([]);
   const [nextSteps, setNextSteps] = useState<string[]>([]);
   const [liveModel, setLiveModel] = useState({
@@ -65,51 +72,96 @@ export default function AIAdvisor({ onLogout: _onLogout }: AIAdvisorProps) {
   });
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    const loadInsights = async () => {
+    const loadData = async () => {
       try {
-        const data = await fetchAdvisorInsights(preferredProvider);
-        if (Array.isArray(data?.cards) && data.cards.length > 0) {
-          setInsightCards(data.cards);
-        }
-        if (Array.isArray(data?.steps)) {
-          setNextSteps(data.steps);
-        }
-        if (data?.model) {
+        const insightsData = await fetchAdvisorInsights(preferredProvider);
+        if (Array.isArray(insightsData?.cards)) setInsightCards(insightsData.cards);
+        if (Array.isArray(insightsData?.steps)) setNextSteps(insightsData.steps);
+        if (insightsData?.model) {
           setLiveModel({
-            provider: data.model.provider_used || data.model.provider || "openai",
-            modelName: data.model.model_name || "unknown",
-            fallbackReason: data.model.fallback_reason || null,
+            provider: insightsData.model.provider_used || insightsData.model.provider || "openai",
+            modelName: insightsData.model.model_name || "unknown",
+            fallbackReason: insightsData.model.fallback_reason || null,
           });
         }
-      } catch {
-        setInsightCards([]);
-        setNextSteps([]);
+        await loadConversations();
+      } catch (err) {
+        console.error("Failed to load initial data", err);
       }
     };
-
-    void loadInsights();
+    void loadData();
   }, []);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  const loadConversations = async () => {
+    try {
+      const res = await fetch("http://localhost:5000/advisor/conversations", {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token") || ""}` },
+      });
+      const data = await res.json();
+      if (data.success && Array.isArray(data.conversations)) {
+        setConversations(data.conversations);
+        if (!currentConversationId && data.conversations.length > 0) {
+          const mostRecent = data.conversations[0];
+          await loadConversation(mostRecent._id);
+        }
+      }
+    } catch (err) {
+      console.error("Failed to load conversations", err);
+    }
+  };
+
+  const loadConversation = async (convId: string) => {
+    try {
+      const res = await fetch(`http://localhost:5000/advisor/conversations/${convId}`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token") || ""}` },
+      });
+      const data = await res.json();
+      if (data.success && data.conversation) {
+        setCurrentConversationId(convId);
+        setCurrentTitle(data.conversation.title);
+        setMessages(
+          data.conversation.messages.map((m: any, idx: number) => ({
+            id: idx + 1,
+            role: m.role,
+            text: m.content,
+            meta: m.role === "user" ? "You" : "AI Advisor",
+          }))
+        );
+      }
+    } catch (err) {
+      console.error("Failed to load conversation", err);
+    }
+  };
+
+  const startNewConversation = () => {
+    setCurrentConversationId(null);
+    setCurrentTitle("New Chat");
+    setMessages(starterMessages);
+    setMessageInput("");
+    setAttachedFile(null);
+  };
 
   const onFilePicked = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0] || null;
     if (!file) return;
-
     if (file.type !== "application/pdf") {
-      window.alert("Please attach a PDF document.");
+      alert("Please attach a PDF document.");
       event.target.value = "";
       return;
     }
-
     setAttachedFile(file);
   };
 
   const clearAttachment = () => {
     setAttachedFile(null);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
+    if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
   const sendChatMessage = async () => {
@@ -139,17 +191,18 @@ export default function AIAdvisor({ onLogout: _onLogout }: AIAdvisorProps) {
     try {
       await streamAdvisorMessage(
         {
-        question,
-        provider: preferredProvider,
-        document: attachedFile,
+          question,
+          provider: preferredProvider,
+          document: attachedFile,
+          conversationId: currentConversationId || "",
         },
         {
           onToken: (token) => {
             setMessages((prev) =>
-              prev.map((message) =>
-                message.id === assistantMessageId
-                  ? { ...message, text: `${message.text}${token}` }
-                  : message
+              prev.map((msg) =>
+                msg.id === assistantMessageId
+                  ? { ...msg, text: `${msg.text}${token}` }
+                  : msg
               )
             );
           },
@@ -163,35 +216,37 @@ export default function AIAdvisor({ onLogout: _onLogout }: AIAdvisorProps) {
             }
 
             setMessages((prev) =>
-              prev.map((message) =>
-                message.id === assistantMessageId
-                  ? { ...message, text: response.answer || message.text || "No answer returned by the advisor." }
-                  : message
+              prev.map((msg) =>
+                msg.id === assistantMessageId
+                  ? { ...msg, text: response.answer || msg.text || "No answer returned." }
+                  : msg
               )
             );
+
+            if (response.conversationId && !currentConversationId) {
+              setCurrentConversationId(response.conversationId);
+              setCurrentTitle(response.title || "New Chat");
+              loadConversations();
+            }
           },
           onError: (message) => {
             setMessages((prev) =>
-              prev.map((item) =>
-                item.id === assistantMessageId
-                  ? { ...item, text: message || "I could not reach the advisor service. Please try again." }
-                  : item
+              prev.map((msg) =>
+                msg.id === assistantMessageId
+                  ? { ...msg, text: message || "Service error. Try again." }
+                  : msg
               )
             );
           },
         }
       );
-    } catch (error: unknown) {
-      const message =
-        error && typeof error === "object" && "response" in error
-          ? String((error as { response?: { data?: { message?: string } } }).response?.data?.message || "")
-          : "";
-
+    } catch (err) {
+      console.error(err);
       setMessages((prev) =>
-        prev.map((item) =>
-          item.id === assistantMessageId
-            ? { ...item, text: message || "I could not reach the advisor service. Please try again." }
-            : item
+        prev.map((msg) =>
+          msg.id === assistantMessageId
+            ? { ...msg, text: "Connection error. Please try again." }
+            : msg
         )
       );
     } finally {
@@ -200,199 +255,293 @@ export default function AIAdvisor({ onLogout: _onLogout }: AIAdvisorProps) {
     }
   };
 
-  const onInputKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === "Enter") {
-      event.preventDefault();
+  const onInputKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
       void sendChatMessage();
     }
   };
 
   return (
-    <PageLayout
-      title="AI Advisor"
-      description="Portfolio guidance, compliance signals, and action planning"
-      compact
-    >
-      <div className="grid grid-cols-1 xl:grid-cols-[1.7fr_1fr] gap-5 h-[calc(100vh-210px)] min-h-0">
-        <section className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden flex flex-col min-h-0">
-          <header className="p-5 border-b border-gray-200 bg-gradient-to-r from-emerald-50 via-emerald-100/40 to-cyan-50">
-            <div className="flex items-center justify-between gap-4">
-              <div className="flex items-center gap-3">
-                <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-emerald-600 to-emerald-700 text-white flex items-center justify-center shadow-md">
-                  <Sparkles size={18} />
-                </div>
-                <div>
-                  <h2 className="text-lg font-bold text-gray-900">Advisor Session</h2>
-                  <p className="text-sm text-gray-600">
-                    Live model: {liveModel.provider}/{liveModel.modelName}
-                  </p>
-                  {liveModel.fallbackReason ? (
-                    <p className="text-xs text-amber-700 mt-1">{liveModel.fallbackReason}</p>
-                  ) : null}
-                </div>
-              </div>
-              <span className="inline-flex items-center gap-2 text-xs font-semibold bg-emerald-100 text-emerald-800 px-3 py-1.5 rounded-full border border-emerald-200">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                Connected
-              </span>
+    <PageLayout title="AI Advisor" description="Portfolio guidance & action planning" compact>
+      <div className="grid grid-cols-1 lg:grid-cols-[minmax(280px,340px)_1fr] gap-6 h-[calc(100vh-200px)] min-h-0 bg-gray-50/40 overflow-hidden">
+        {/* Left column: History + Insights stacked vertically */}
+        <div className="flex flex-col gap-6 overflow-hidden">
+          {/* 1. Conversation History – scrollable */}
+          <div className="bg-white/80 backdrop-blur-sm border border-gray-200/80 rounded-2xl shadow-sm flex flex-col overflow-hidden flex-1 min-h-0">
+            <div className="p-5 border-b border-gray-200/70 flex items-center justify-between bg-gradient-to-r from-emerald-50/80 to-white shrink-0">
+              <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+                <MessageSquare size={18} className="text-emerald-600" />
+                Conversations
+              </h3>
+              <button
+                onClick={startNewConversation}
+                className="p-2 rounded-lg hover:bg-emerald-50 text-emerald-600 transition-colors"
+                title="New Conversation"
+              >
+                <Plus size={20} />
+              </button>
             </div>
-          </header>
 
-          <div className="flex-1 overflow-y-auto p-4 bg-gradient-to-b from-white to-gray-50 min-h-0">
-            <div className="space-y-4">
-              {messages.map((item) => (
-                <article key={item.id} className="flex items-start gap-3">
-                  <div className="w-9 h-9 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0 border border-emerald-200">
-                    <Bot size={17} />
-                  </div>
-                  <div>
-                    <div
-                      className={`border rounded-xl px-4 py-3 text-sm shadow-sm max-w-2xl leading-6 whitespace-pre-wrap ${
-                        item.role === "user"
-                          ? "bg-emerald-600 text-white border-emerald-600"
-                          : "bg-white text-gray-800 border-gray-200"
-                      }`}
-                    >
-                      {item.text}
+            <div className="flex-1 overflow-y-auto px-2 py-3 min-h-0">
+              {conversations.length === 0 ? (
+                <div className="p-6 text-center text-sm text-gray-500 flex flex-col items-center gap-2 mt-8">
+                  <MessageSquare size={32} className="opacity-40" />
+                  <p>No conversations yet</p>
+                  <p className="text-xs">Start chatting to create one</p>
+                </div>
+              ) : (
+                conversations.map((conv) => (
+                  <button
+                    key={conv._id}
+                    onClick={() => loadConversation(conv._id)}
+                    className={`w-full text-left px-4 py-3.5 rounded-xl flex items-center gap-3 transition-all duration-200 ${
+                      currentConversationId === conv._id
+                        ? "bg-emerald-50/80 border-l-4 border-emerald-500 shadow-sm"
+                        : "hover:bg-gray-50/80"
+                    }`}
+                  >
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-100 to-cyan-100 flex items-center justify-center shrink-0">
+                      <MessageSquare size={16} className="text-emerald-700" />
                     </div>
-                    <p className="text-xs text-gray-500 mt-1.5">{item.meta}</p>
-                  </div>
-                </article>
-              ))}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-gray-900 truncate">{conv.title}</p>
+                      <p className="text-xs text-gray-500 mt-0.5">
+                        {new Date(conv.lastActive).toLocaleDateString()}
+                      </p>
+                    </div>
+                  </button>
+                ))
+              )}
             </div>
           </div>
 
-          <footer className="p-4 border-t border-gray-200 bg-white">
-            <div className="flex flex-wrap gap-2 mb-3">
+          {/* 2. Advisor Insights – fully scrollable */}
+          <div className="bg-white/80 backdrop-blur-sm border border-gray-200/80 rounded-2xl shadow-md p-6 flex flex-col overflow-hidden flex-1 min-h-0">
+            <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2 mb-4 shrink-0">
+              <Zap size={20} className="text-emerald-600" />
+              Advisor Insights
+            </h3>
+
+            {/* Scrollable content area */}
+            <div className="flex-1 overflow-y-auto space-y-6 min-h-0 pr-2">
+              {/* Insight Cards */}
+              {insightCards.map((card) => {
+                const type = card.type?.toLowerCase() || "";
+                let Icon = Leaf;
+                let color = "emerald";
+                if (type === "market") {
+                  Icon = TrendingUp;
+                  color = "cyan";
+                }
+                if (type === "compliance") {
+                  Icon = ShieldCheck;
+                  color = "amber";
+                }
+                return (
+                  <div
+                    key={card.type}
+                    className={`rounded-2xl border bg-${color}-50/70 border-${color}-200/70 p-5 shadow-sm hover:shadow transition-shadow`}
+                  >
+                    <div className={`flex items-center gap-2.5 text-${color}-800 mb-3`}>
+                      <Icon size={18} />
+                      <p className="text-xs font-bold uppercase tracking-wide">{card.type}</p>
+                    </div>
+                    <p className="text-sm text-gray-900 font-medium leading-relaxed">{card.text}</p>
+                  </div>
+                );
+              })}
+
+              {/* Next Steps */}
+              <div className="rounded-2xl border bg-gray-50/70 border-gray-200/70 p-5 shadow-sm">
+                <p className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                  <ArrowUp size={16} className="text-emerald-600" />
+                  Next Steps
+                </p>
+                <ul className="space-y-3 text-sm">
+                  {nextSteps.map((step, i) => (
+                    <li
+                      key={i}
+                      className="bg-white/80 border border-gray-200/70 rounded-xl p-4 shadow-sm hover:shadow transition-shadow"
+                    >
+                      {step}
+                    </li>
+                  ))}
+                  {nextSteps.length === 0 && (
+                    <li className="text-gray-600 italic text-center py-6">No steps available yet</li>
+                  )}
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Right column: Chat */}
+        <section className="bg-white/90 backdrop-blur-sm border border-gray-200/80 rounded-2xl shadow-md flex flex-col overflow-hidden">
+          <header className="p-5 border-b border-gray-200/70 bg-gradient-to-r from-emerald-50 via-white to-cyan-50/30 shrink-0">
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3.5">
+                <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-emerald-600 to-teal-600 text-white flex items-center justify-center shadow-md">
+                  <Sparkles size={20} />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-gray-900 truncate max-w-[340px]">
+                    {currentTitle}
+                  </h2>
+                  <div className="flex items-center gap-2 mt-0.5">
+                    <span className="text-sm text-gray-600 font-medium">
+                      {liveModel.provider} · {liveModel.modelName}
+                    </span>
+                    {liveModel.fallbackReason && (
+                      <span className="text-xs px-2 py-0.5 bg-amber-100 text-amber-800 rounded-full">
+                        {liveModel.fallbackReason}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={startNewConversation}
+                  className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:border-gray-400 transition-all shadow-sm"
+                >
+                  <RotateCcw size={16} />
+                  New Chat
+                </button>
+
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-semibold bg-gradient-to-r from-emerald-100 to-emerald-50 text-emerald-800 rounded-full border border-emerald-200/70 shadow-sm">
+                  <Zap size={12} className="text-emerald-600" />
+                  Live
+                </div>
+              </div>
+            </div>
+          </header>
+
+          {/* Scrollable chat messages */}
+          <div className="flex-1 overflow-y-auto p-6 bg-gradient-to-b from-gray-50/50 to-white min-h-0">
+            <div className="space-y-6 max-w-5xl mx-auto">
+              {messages.map((msg) => (
+                <div
+                  key={msg.id}
+                  className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"} animate-fade-in`}
+                >
+                  <div className={`flex items-start gap-3 max-w-[82%]`}>
+                    {msg.role === "assistant" && (
+                      <div className="w-9 h-9 rounded-2xl bg-gradient-to-br from-emerald-100 to-teal-100 flex items-center justify-center shrink-0 shadow-sm border border-emerald-200/50">
+                        <Bot size={18} className="text-emerald-700" />
+                      </div>
+                    )}
+
+                    <div
+                      className={`rounded-2xl px-5 py-3.5 text-[15px] leading-relaxed shadow-sm transition-all duration-200 ${
+                        msg.role === "user"
+                          ? "bg-gradient-to-r from-emerald-600 to-emerald-700 text-white"
+                          : "bg-white text-gray-800 border border-gray-200/80"
+                      }`}
+                    >
+                     {msg.text || (
+  <Loader2 size={18} className="animate-spin text-emerald-600" />
+)}
+                    </div>
+
+                    {msg.role === "user" && (
+                      <div className="w-9 h-9 rounded-2xl bg-gray-100 flex items-center justify-center shrink-0 text-gray-600 font-medium border border-gray-200/70">
+                        You
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+{/* 
+              {isSending && (
+                <div className="flex justify-start">
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-2xl bg-gradient-to-br from-emerald-100 to-teal-100 flex items-center justify-center shrink-0">
+                      <Bot size={18} className="text-emerald-700" />
+                    </div>
+                    <div className="bg-white rounded-2xl px-5 py-3.5 border border-gray-200/80 shadow-sm">
+                      <Loader2 size={18} className="animate-spin text-emerald-600" />
+                    </div>
+                  </div>
+                </div>
+              )} */}
+
+              <div ref={messagesEndRef} />
+            </div>
+          </div>
+
+          <footer className="p-5 border-t border-gray-200/70 bg-white/80 backdrop-blur-sm shrink-0">
+            <div className="flex flex-wrap gap-2 mb-4">
               {quickPrompts.map((prompt) => (
                 <button
                   key={prompt}
                   onClick={() => setMessageInput(prompt)}
-                  className="px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition"
+                  className="px-4 py-2 rounded-full text-sm font-medium bg-emerald-50/80 text-emerald-700 border border-emerald-200/70 hover:bg-emerald-100/80 hover:border-emerald-300 transition-all shadow-sm"
                 >
                   {prompt}
                 </button>
               ))}
             </div>
 
-            <div className="flex items-center gap-2 mb-3">
+            <div className="flex items-center gap-3 mb-4">
               <input
-                id="advisor-attachment"
+                id="file-upload"
                 ref={fileInputRef}
                 type="file"
                 accept="application/pdf"
                 onChange={onFilePicked}
                 className="hidden"
               />
-              <button
+              {/* <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-300 text-sm text-gray-700 hover:bg-gray-50 transition"
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-gray-300 text-sm hover:bg-gray-50 hover:border-gray-400 transition-all shadow-sm"
               >
-                <Paperclip size={15} />
-                Attach Document
-              </button>
+                <Paperclip size={18} className="text-gray-600" />
+                Attach PDF
+              </button> */}
 
-              {attachedFile ? (
-                <div className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm">
-                  <FileText size={14} />
-                  <span className="max-w-[220px] truncate">{attachedFile.name}</span>
-                  <button
-                    type="button"
-                    onClick={clearAttachment}
-                    className="text-emerald-800 hover:text-emerald-900"
-                    aria-label="Remove attachment"
-                  >
-                    <X size={14} />
+              {attachedFile && (
+                <div className="flex items-center gap-2.5 px-4 py-2 bg-emerald-50/80 border border-emerald-200/70 rounded-xl text-sm text-emerald-800 shadow-sm">
+                  <FileText size={16} />
+                  <span className="max-w-[200px] truncate font-medium">{attachedFile.name}</span>
+                  <button onClick={clearAttachment} className="text-emerald-700 hover:text-emerald-900">
+                    <X size={16} />
                   </button>
                 </div>
-              ) : null}
+              )}
             </div>
 
-            <div className="flex items-center bg-gray-100 rounded-xl px-3 py-2 border border-gray-200 focus-within:ring-2 focus-within:ring-emerald-300 focus-within:border-emerald-400">
+            <div className="relative flex items-center bg-gray-100/80 backdrop-blur-sm rounded-2xl px-5 py-3.5 border border-gray-200/70 focus-within:ring-2 focus-within:ring-emerald-400/50 focus-within:border-emerald-400/50 transition-all shadow-inner">
               <input
                 value={messageInput}
-                onChange={(event) => setMessageInput(event.target.value)}
+                onChange={(e) => setMessageInput(e.target.value)}
                 onKeyDown={onInputKeyDown}
-                className="flex-1 bg-transparent outline-none text-sm text-gray-800 placeholder-gray-500"
-                placeholder="Ask for recommendations, risk checks, or reduction roadmap..."
+                placeholder="Ask about your portfolio, credits, compliance..."
+                className="flex-1 bg-transparent outline-none text-gray-900 placeholder-gray-500 text-[15px]"
+                disabled={isSending}
               />
               <button
-                onClick={() => void sendChatMessage()}
-                disabled={isSending}
-                className="ml-2 rounded-lg px-3 py-2 bg-emerald-600 text-white hover:bg-emerald-700 transition inline-flex items-center gap-2 text-sm font-semibold disabled:opacity-60 disabled:cursor-not-allowed"
+                onClick={sendChatMessage}
+                disabled={isSending || !messageInput.trim()}
+                className="ml-3 px-6 py-2.5 bg-gradient-to-r from-emerald-600 to-emerald-700 text-white rounded-xl font-medium hover:from-emerald-700 hover:to-emerald-800 disabled:opacity-60 disabled:cursor-not-allowed transition-all shadow-md flex items-center gap-2"
               >
-                {isSending ? "Sending" : "Send"}
-                {isSending ? <Loader2 size={15} className="animate-spin" /> : <ArrowUp size={15} />}
+                {isSending ? (
+                  <>
+                    Sending
+                    <Loader2 size={18} className="animate-spin" />
+                  </>
+                ) : (
+                  <>
+                    Send
+                    <ArrowUp size={18} />
+                  </>
+                )}
               </button>
             </div>
           </footer>
         </section>
-
-        <aside className="bg-white border border-gray-200 rounded-2xl shadow-sm p-4 min-h-0 flex flex-col gap-3 overflow-hidden">
-          <h3 className="text-base font-bold text-gray-900">Advisor Insights</h3>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 xl:grid-cols-1 gap-3">
-            {insightCards.map((card) => {
-              const type = String(card.type || "").toLowerCase();
-
-              if (type === "market") {
-                return (
-                  <div key={card.type} className="rounded-xl border border-cyan-200 bg-cyan-50 p-4">
-                    <div className="flex items-center gap-2 text-cyan-800 mb-1">
-                      <TrendingUp size={15} />
-                      <p className="text-xs font-bold uppercase tracking-wide">Market</p>
-                    </div>
-                    <p className="text-sm text-cyan-900 font-semibold">{card.text}</p>
-                  </div>
-                );
-              }
-
-              if (type === "compliance") {
-                return (
-                  <div key={card.type} className="rounded-xl border border-amber-200 bg-amber-50 p-4">
-                    <div className="flex items-center gap-2 text-amber-800 mb-1">
-                      <ShieldCheck size={15} />
-                      <p className="text-xs font-bold uppercase tracking-wide">Compliance</p>
-                    </div>
-                    <p className="text-sm text-amber-900 font-semibold">{card.text}</p>
-                  </div>
-                );
-              }
-
-              return (
-                <div key={card.type} className="rounded-xl border border-emerald-200 bg-emerald-50 p-4">
-                  <div className="flex items-center gap-2 text-emerald-800 mb-1">
-                    <Leaf size={15} />
-                    <p className="text-xs font-bold uppercase tracking-wide">Reduction</p>
-                  </div>
-                  <p className="text-sm text-emerald-900 font-semibold">{card.text}</p>
-                </div>
-              );
-            })}
-            {insightCards.length === 0 ? (
-              <div className="rounded-xl border border-gray-200 bg-gray-50 p-4 text-sm text-gray-600">
-                No trade insights are available yet.
-              </div>
-            ) : null}
-          </div>
-
-          <div className="rounded-xl border border-gray-200 bg-gray-50 p-3 flex-1 min-h-0 overflow-y-auto">
-            <p className="text-sm font-bold text-gray-900 mb-3">Recommended Next Steps</p>
-            <ul className="space-y-3 text-sm text-gray-700">
-              {nextSteps.map((step) => (
-                <li key={step} className="bg-white border border-gray-200 rounded-lg p-3">
-                  {step}
-                </li>
-              ))}
-              {nextSteps.length === 0 ? (
-                <li className="bg-white border border-gray-200 rounded-lg p-3">
-                  No actionable steps yet. Complete a few trades to unlock trend-based guidance.
-                </li>
-              ) : null}
-            </ul>
-          </div>
-        </aside>
       </div>
     </PageLayout>
   );
