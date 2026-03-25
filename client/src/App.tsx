@@ -14,6 +14,7 @@ import AllianceDashboard from "./pages/AllianceDashboard";
 import AllianceMembers from "./pages/AllianceMembers";
 import AllianceMarketplace from "./pages/AllianceMarketplace";
 import Forum from "./pages/Forum";
+import PayLater from "./pages/PayLater";
 
 const PAGE_TO_PATH: Record<string, string> = {
   home: "/",
@@ -30,8 +31,7 @@ const PAGE_TO_PATH: Record<string, string> = {
   ai: "/ai",
   settings: "/settings",
   "manage-people": "/manage-people",
-  
-  
+  "pay-later": "/pay-later",
 };
 
 const PATH_TO_PAGE: Record<string, string> = Object.fromEntries(
@@ -181,9 +181,10 @@ export default function App() {
 
       {page === "dashboard" && <Dashboard />}
       {page === "alliance-dashboard" && <AllianceDashboard />}
-{page === "alliance-members" && <AllianceMembers />}
-{page === "alliance-marketplace" && <AllianceMarketplace />}
+      {page === "alliance-members" && <AllianceMembers />}
+      {page === "alliance-marketplace" && <AllianceMarketplace />}
       {page === "marketplace" && <Marketplace />}
+      {page === "pay-later" && <PayLater />}
       {page === "holdings" && <Holdings onLogout={handleLogout} />}
       {page === "reports" && <Reports onLogout={handleLogout} />}
       {page === "news" && <News onLogout={handleLogout} />}

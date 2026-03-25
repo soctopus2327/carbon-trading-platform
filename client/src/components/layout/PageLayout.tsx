@@ -25,7 +25,10 @@ export default function PageLayout({
 
   const isAdmin = role === "ADMIN";
   const onManagePeoplePage = window.location.pathname === "/manage-people";
-  const onForumPage=window.location.pathname==="/forum";
+  const onForumPage = window.location.pathname === "/forum";
+  const onMarketplacePage = window.location.pathname === "/marketplace";
+  const onPayLaterPage = window.location.pathname === "/pay-later";
+
   return (
     <main className="flex-1 bg-gray-50 flex flex-col min-h-0">
       <div
@@ -39,6 +42,20 @@ export default function PageLayout({
         </div>
 
         <div className="flex items-center gap-3">
+          {/* Pay Later Button (on Marketplace) */}
+          {onMarketplacePage && (
+            <button
+              onClick={() => {
+                window.history.pushState({}, "", "/pay-later");
+                window.dispatchEvent(new PopStateEvent("popstate"));
+              }}
+              className="px-6 py-2 rounded-lg shadow-md transition font-semibold bg-red-600 text-white hover:bg-red-700 hover:shadow-lg"
+            >
+              Pay Later
+            </button>
+          )}
+
+
           {isAdmin && (
             <button
               onClick={() => {

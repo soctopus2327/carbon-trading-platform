@@ -99,6 +99,22 @@ allianceMemberships: [
     default: 0
 },
 
+    /*
+    Pay Later / Simple Credit
+    */
+
+    currentPayLaterDebt: {
+        type: Number,
+        default: 0,
+        description: "Total amount currently owed through pay later transactions"
+    },
+
+    payLaterLimit: {
+        type: Number,
+        default: 500000,
+        description: "Maximum amount company can borrow via pay later"
+    },
+
 
     /*
     AI ready fields

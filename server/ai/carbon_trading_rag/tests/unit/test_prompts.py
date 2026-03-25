@@ -118,7 +118,7 @@ def test_build_user_prompt_contains_instruction_constraint():
 
     prompt = build_user_prompt("Q?", [chunk])
 
-    assert "strictly from the retrieved context" in prompt.lower()
+    assert "write the answer from retrieved context" in prompt.lower()
 
 
 def test_build_user_prompt_handles_empty_context():
