@@ -27,9 +27,6 @@ function formatNumber(value) {
   return Number(value || 0).toLocaleString();
 }
 
-// ────────────────────────────────────────────────
-// Helpers
-// ────────────────────────────────────────────────
 
 async function enrichContextWithMarketNews(baseContext) {
   const start = Date.now();
@@ -144,73 +141,6 @@ async function buildCompanyContextForChat(companyId) {
   });
 }
 
-async function buildInsightsForScope(companyId) {
-  const listingFilter = companyId ? { sellerCompany: companyId } : {};
-  const txFilter = companyId
-    ? { $or: [{ buyerCompany: companyId }, { sellerCompany: companyId }] }
-    : {};
-
-  const [
-    activeListings,
-    openSupply,
-    transactions,
-    successfulTx,
-    pendingTx,
-    payLaterDue,
-    totalCreditsMoved,
-    totalVolume,
-    avgPriceAgg,
-  ] = await Promise.all([
-    TradeListing.countDocuments({ ...listingFilter, status: "ACTIVE" }),
-    TradeListing.aggregate([
-      { $match: { ...listingFilter, status: "ACTIVE" } },
-      { $group: { _id: null, remaining: { $sum: "$remainingQuantity" } } },
-    ]),
-    Transaction.countDocuments(txFilter),
-    Transaction.countDocuments({ ...txFilter, status: "SUCCESS" }),
-    Transaction.countDocuments({ ...txFilter, status: "PENDING" }),
-    Transaction.countDocuments({
-      ...txFilter,
-      payLater: true,
-      payLaterDate: { $lt: new Date() },
-      status: { $ne: "SUCCESS" },
-    }),
-    Transaction.aggregate([
-      { $match: txFilter },
-      { $group: { _id: null, credits: { $sum: "$credits" } } },
-    ]),
-    Transaction.aggregate([
-      { $match: txFilter },
-      { $group: { _id: null, amount: { $sum: "$totalAmount" } } },
-    ]),
-    Transaction.aggregate([
-      { $match: { ...txFilter, status: "SUCCESS" } },
-      { $group: { _id: null, avgPrice: { $avg: "$pricePerCredit" } } },
-    ]),
-  ]);
-
-  return {
-    cards: [
-      {
-        type: "Reduction",
-        text: `${formatNumber(totalCreditsMoved[0]?.credits || 0)} credits moved; ${formatNumber(openSupply[0]?.remaining || 0)} credits currently listed.`,
-      },
-      {
-        type: "Market",
-        text: `${activeListings} active listings with avg settled price ${(avgPriceAgg[0]?.avgPrice || 0).toFixed(2)} per credit.`,
-      },
-      {
-        type: "Compliance",
-        text: `${pendingTx} pending trades, ${payLaterDue} overdue pay-later items, ${transactions > 0 ? Math.round((successfulTx / transactions) * 100) : 0}% success rate.`,
-      },
-    ],
-    steps: [
-      `Review ${pendingTx} pending transaction(s) and clear blockers before creating new listings.`,
-      `Prioritize settlement of ${payLaterDue} overdue pay-later transaction(s).`,
-      `Track total trade volume of ${formatNumber(totalVolume[0]?.amount || 0)} and rebalance listing supply weekly.`,
-    ],
-  };
-}
 
 async function buildLiveModelMeta(preferredProvider) {
   try {
@@ -220,10 +150,6 @@ async function buildLiveModelMeta(preferredProvider) {
     return { provider: preferredProvider, model_name: "unknown" };
   }
 }
-
-// ────────────────────────────────────────────────
-// Conversation History
-// ────────────────────────────────────────────────
 
 exports.listConversations = async (req, res) => {
   try {
@@ -344,10 +270,6 @@ exports.deleteConversation = async (req, res) => {
   }
 };
 
-// ────────────────────────────────────────────────
-// Chat (non-stream)
-// ────────────────────────────────────────────────
-
 exports.chat = async (req, res) => {
   const start = Date.now();
   const { question, provider: provInput, conversationId } = req.body;
@@ -420,10 +342,6 @@ exports.chat = async (req, res) => {
   }
 };
 
-// ────────────────────────────────────────────────
-// Chat Stream
-// ────────────────────────────────────────────────
-
 exports.chatStream = async (req, res) => {
   const start = Date.now();
   const { question, provider: provInput, conversationId } = req.body;
@@ -453,7 +371,6 @@ exports.chatStream = async (req, res) => {
       });
       if (!conversation) throw new Error("Conversation not found");
     } else {
-      // Always create NEW conversation when no conversationId is provided
       conversation = new AdvisorConversation({
         user: userId,
         company: companyId || null,
@@ -522,33 +439,120 @@ exports.chatStream = async (req, res) => {
   }
 };
 
-// ────────────────────────────────────────────────
-// Insights
-// ────────────────────────────────────────────────
+
+async function buildInsightsForScope(companyId) {
+  const listingFilter = companyId ? { sellerCompany: companyId } : {};
+  const transactionFilter = companyId
+    ? { $or: [{ buyerCompany: companyId }, { sellerCompany: companyId }] }
+    : {};
+
+  const [
+    activeListingsCount,
+    openSupplyAgg,
+    totalTxCount,
+    successfulTxCount,
+    pendingTxCount,
+    overduePayLaterCount,
+    totalCreditsMovedAgg,
+    totalVolumeAgg,
+    avgPriceAgg,
+  ] = await Promise.all([
+    TradeListing.countDocuments({ ...listingFilter, status: "ACTIVE" }),
+
+    TradeListing.aggregate([
+      { $match: { ...listingFilter, status: "ACTIVE" } },
+      { $group: { _id: null, remaining: { $sum: "$remainingQuantity" } } },
+    ]),
+
+    Transaction.countDocuments(transactionFilter),
+    Transaction.countDocuments({ ...transactionFilter, status: "SUCCESS" }),
+    Transaction.countDocuments({ ...transactionFilter, status: "PENDING" }),
+
+    Transaction.countDocuments({
+      ...transactionFilter,
+      payLater: true,
+      payLaterDate: { $lt: new Date() },
+      status: { $ne: "SUCCESS" },
+    }),
+
+    Transaction.aggregate([
+      { $match: transactionFilter },
+      { $group: { _id: null, totalCredits: { $sum: "$credits" } } },
+    ]),
+
+    Transaction.aggregate([
+      { $match: transactionFilter },
+      { $group: { _id: null, totalAmount: { $sum: "$totalAmount" } } },
+    ]),
+
+    Transaction.aggregate([
+      { $match: { ...transactionFilter, status: "SUCCESS" } },
+      { $group: { _id: null, avgPrice: { $avg: "$pricePerCredit" } } },
+    ]),
+  ]);
+
+  const openSupplyCredits = openSupplyAgg[0]?.remaining || 0;
+  const movedCredits = totalCreditsMovedAgg[0]?.totalCredits || 0;
+  const movedVolume = totalVolumeAgg[0]?.totalAmount || 0;
+  const averagePrice = avgPriceAgg[0]?.avgPrice || 0;
+
+  const successRate = totalTxCount > 0 
+    ? Math.round((successfulTxCount / totalTxCount) * 100) 
+    : 0;
+
+  return {
+    cards: [
+      {
+        type: "Reduction",
+        text: `${formatNumber(movedCredits)} credits retired/moved in total. Currently ${formatNumber(openSupplyCredits)} credits listed for sale.`,
+      },
+      {
+        type: "Market",
+        text: `${activeListingsCount} active listings • Average settled price: ${averagePrice.toFixed(2)} per credit.`,
+      },
+      {
+        type: "Compliance",
+        text: `${pendingTxCount} pending transaction(s) • ${overduePayLaterCount} overdue pay-later • ${successRate}% overall success rate.`,
+      },
+    ],
+    steps: [
+      `Review and settle the ${pendingTxCount} pending transaction(s) before creating new listings.`,
+      `Clear the ${overduePayLaterCount} overdue pay-later obligation(s) to avoid compliance issues.`,
+      `Monitor weekly trade volume (${formatNumber(movedVolume)}) and rebalance your listing strategy.`,
+      `Consider retiring high-cost or low-impact credits first if reduction targets are approaching.`,
+    ],
+  };
+}
 
 exports.getInsights = async (req, res) => {
   try {
-    const preferredProvider = resolveRequestedProvider(req.query.provider || PROVIDER.LMSTUDIO);
-    const companyId = req.user?.company ? String(req.user.company) : null;
+    const preferredProvider = resolveRequestedProvider(
+      String(req.query.provider || PROVIDER.LMSTUDIO).trim()
+    );
 
-    const [model, insights] = await Promise.all([
-      buildLiveModelMeta(preferredProvider),
-      buildInsightsForScope(companyId),
-    ]);
+    const userCompanyId = req.user?.company ? String(req.user.company) : null;
 
-    let scope = "Platform";
-    if (companyId) {
-      const company = await Company.findById(companyId).select("name").lean();
-      scope = company?.name || "Company";
-    }
+    const insights = await buildInsightsForScope(userCompanyId);
 
-    res.json({
-      ...insights,
-      scope,
-      model,
+    const model = await buildLiveModelMeta(preferredProvider);
+
+    return res.json({
+      cards: insights.cards,
+      steps: insights.steps,
+      scope: userCompanyId 
+        ? (await Company.findById(userCompanyId).select("name").lean())?.name || "Company"
+        : "Platform",
+      model,                   
+      timestamp: new Date().toISOString(),
     });
+
   } catch (err) {
-    console.error("getInsights error:", err);
-    res.status(500).json({ success: false, message: "Failed to load insights" });
+    console.error("Error in getInsights:", err);
+    return res.status(500).json({
+      success: false,
+      message: err.message || "Failed to load advisor insights",
+      cards: [],
+      steps: [],
+    });
   }
 };

@@ -187,7 +187,7 @@ describe("AllianceDashboard", () => {
   });
 
   // --------------------------------------------------
-  // Missing token  ← NOW SILENCED
+  // Missing token  
   // --------------------------------------------------
   it("does not crash when token is missing", async () => {
     const consoleSpy = jest.spyOn(console, "error").mockImplementation(() => {});

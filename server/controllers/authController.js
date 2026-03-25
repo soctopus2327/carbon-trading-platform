@@ -8,12 +8,14 @@ const { sendCompanyRegistrationAlert } = require("../utils/emailService");
 // ================= REGISTER COMPANY =================
 exports.registerCompany = async (req, res) => {
   try {
-    const { companyName, email, password, companyType } = req.body;
+    const { companyName, email, password, companyType, initialCredits = 0 } = req.body;
 
     const company = await Company.create({
       name: companyName,
-      totalCredits: 0,
-      companyType: companyType
+      totalCredits: Number(initialCredits) || 0,
+      carbonCredits: Number(initialCredits) || 0,
+      companyType: companyType,
+      status: "PENDING"
     });
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -26,18 +28,16 @@ exports.registerCompany = async (req, res) => {
       role: "ADMIN"
     });
 
-    // 4️⃣ Generate token (use user._id like original)
     company.users = [user._id];
     await company.save();
 
     const token = generateToken(user);
 
-    // ── Notify platform admin about new company registration ──
     await sendCompanyRegistrationAlert(company.name, email, companyType);
 
     res.json({
       token: generateToken(user._id),
-      user,
+      user,           // Keep sending full user (Holdings expects this)
       company
     });
 
@@ -51,7 +51,7 @@ exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email }).populate("company");
 
     if (!user)
       return res.status(400).json({ message: "User not found" });
@@ -61,14 +61,37 @@ exports.login = async (req, res) => {
     if (!isMatch)
       return res.status(400).json({ message: "Wrong password" });
 
+    if (user.company && user.company.status !== "ACTIVE") {
+      let msg = "Your company is not yet approved.";
+
+      if (user.company.status === "PENDING") {
+        msg = "Your company registration is pending admin approval. Please wait or contact support.";
+      } else if (user.company.status === "REJECTED") {
+        msg = "Your company registration was rejected.";
+      } else if (user.company.status === "BLOCKED") {
+        msg = "Your company has been blocked.";
+      }
+
+      return res.status(403).json({ 
+        message: msg,
+        status: user.company.status 
+      });
+    }
+
     const token = generateToken(user);
+
+    const userResponse = {
+      ...user.toObject(),
+      company: user.company ? user.company._id : null   // ← This is the key fix
+    };
 
     res.json({
       token,
-      user
+      user: userResponse
     });
 
   } catch (err) {
+    console.error(err);
     res.status(500).json({ error: err.message });
   }
 };

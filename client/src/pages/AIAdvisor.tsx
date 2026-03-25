@@ -77,23 +77,44 @@ export default function AIAdvisor({ onLogout: _onLogout }: AIAdvisorProps) {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const insightsData = await fetchAdvisorInsights(preferredProvider);
-        if (Array.isArray(insightsData?.cards)) setInsightCards(insightsData.cards);
-        if (Array.isArray(insightsData?.steps)) setNextSteps(insightsData.steps);
-        if (insightsData?.model) {
+        const res = await fetch(
+          `http://localhost:5000/advisor/insights?provider=${preferredProvider}`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token") || ""}`,
+            },
+          }
+        );
+
+        if (!res.ok) throw new Error("Failed to fetch insights");
+
+        const insightsData = await res.json();
+
+        setInsightCards(Array.isArray(insightsData.cards) ? insightsData.cards : []);
+        setNextSteps(Array.isArray(insightsData.steps) ? insightsData.steps : []);
+
+        if (insightsData.model) {
           setLiveModel({
-            provider: insightsData.model.provider_used || insightsData.model.provider || "openai",
-            modelName: insightsData.model.model_name || "unknown",
-            fallbackReason: insightsData.model.fallback_reason || null,
+            provider: insightsData.model.provider || preferredProvider,
+            modelName: insightsData.model.model_name || insightsData.model.modelName || "Unknown Model",
+            fallbackReason: insightsData.model.fallback_reason || insightsData.model.fallbackReason || null,
           });
         }
+
         await loadConversations();
       } catch (err) {
-        console.error("Failed to load initial data", err);
+        console.error("Failed to load insights", err);
+        setInsightCards([
+          { type: "Reduction", text: "No reduction data available yet." },
+          { type: "Market", text: "Market data will appear once you have active listings." },
+          { type: "Compliance", text: "Compliance insights will be available after your first trades." },
+        ]);
+        setNextSteps(["Start by creating your first listing", "Complete your company profile"]);
       }
     };
-    void loadData();
-  }, []);
+
+    loadData();
+  }, [preferredProvider]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -316,59 +337,69 @@ export default function AIAdvisor({ onLogout: _onLogout }: AIAdvisorProps) {
             </div>
           </div>
 
-          {/* 2. Advisor Insights – fully scrollable */}
+          {/* 2. Advisor Insights  */}
           <div className="bg-white/80 backdrop-blur-sm border border-gray-200/80 rounded-2xl shadow-md p-6 flex flex-col overflow-hidden flex-1 min-h-0">
-            <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2 mb-4 shrink-0">
+            <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2 mb-5 shrink-0">
               <Zap size={20} className="text-emerald-600" />
               Advisor Insights
             </h3>
 
-            {/* Scrollable content area */}
             <div className="flex-1 overflow-y-auto space-y-6 min-h-0 pr-2">
               {/* Insight Cards */}
-              {insightCards.map((card) => {
-                const type = card.type?.toLowerCase() || "";
-                let Icon = Leaf;
-                let color = "emerald";
-                if (type === "market") {
-                  Icon = TrendingUp;
-                  color = "cyan";
-                }
-                if (type === "compliance") {
-                  Icon = ShieldCheck;
-                  color = "amber";
-                }
-                return (
-                  <div
-                    key={card.type}
-                    className={`rounded-2xl border bg-${color}-50/70 border-${color}-200/70 p-5 shadow-sm hover:shadow transition-shadow`}
-                  >
-                    <div className={`flex items-center gap-2.5 text-${color}-800 mb-3`}>
-                      <Icon size={18} />
-                      <p className="text-xs font-bold uppercase tracking-wide">{card.type}</p>
+              {insightCards.length > 0 ? (
+                insightCards.map((card, index) => {
+                  const type = String(card.type || "").toLowerCase();
+                  let Icon = Leaf;
+                  let colorClass = "emerald";
+
+                  if (type === "market") {
+                    Icon = TrendingUp;
+                    colorClass = "cyan";
+                  } else if (type === "compliance") {
+                    Icon = ShieldCheck;
+                    colorClass = "amber";
+                  }
+
+                  return (
+                    <div
+                      key={index}
+                      className={`rounded-2xl p-5 shadow-sm border bg-${colorClass}-50/80 border-${colorClass}-200/70 hover:shadow transition-all`}
+                    >
+                      <div className={`flex items-center gap-2.5 text-${colorClass}-800 mb-3`}>
+                        <Icon size={18} />
+                        <p className="text-xs font-bold uppercase tracking-widest">{card.type}</p>
+                      </div>
+                      <p className="text-sm leading-relaxed text-gray-900 font-medium">
+                        {card.text}
+                      </p>
                     </div>
-                    <p className="text-sm text-gray-900 font-medium leading-relaxed">{card.text}</p>
-                  </div>
-                );
-              })}
+                  );
+                })
+              ) : (
+                <div className="text-center py-10 text-gray-500">
+                  Loading insights...
+                </div>
+              )}
 
               {/* Next Steps */}
-              <div className="rounded-2xl border bg-gray-50/70 border-gray-200/70 p-5 shadow-sm">
+              <div className="rounded-2xl border bg-gray-50/80 border-gray-200/70 p-5 shadow-sm">
                 <p className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                  <ArrowUp size={16} className="text-emerald-600" />
-                  Next Steps
+                  <ArrowUp size={17} className="text-emerald-600" />
+                  Recommended Next Steps
                 </p>
                 <ul className="space-y-3 text-sm">
                   {nextSteps.map((step, i) => (
                     <li
                       key={i}
-                      className="bg-white/80 border border-gray-200/70 rounded-xl p-4 shadow-sm hover:shadow transition-shadow"
+                      className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm hover:shadow transition-all"
                     >
                       {step}
                     </li>
                   ))}
                   {nextSteps.length === 0 && (
-                    <li className="text-gray-600 italic text-center py-6">No steps available yet</li>
+                    <li className="text-gray-500 italic text-center py-8">
+                      No actionable steps available yet.
+                    </li>
                   )}
                 </ul>
               </div>
@@ -376,7 +407,7 @@ export default function AIAdvisor({ onLogout: _onLogout }: AIAdvisorProps) {
           </div>
         </div>
 
-        {/* Right column: Chat */}
+        {/* Right column: Chat*/}
         <section className="bg-white/90 backdrop-blur-sm border border-gray-200/80 rounded-2xl shadow-md flex flex-col overflow-hidden">
           <header className="p-5 border-b border-gray-200/70 bg-gradient-to-r from-emerald-50 via-white to-cyan-50/30 shrink-0">
             <div className="flex items-center justify-between gap-4">
@@ -402,13 +433,13 @@ export default function AIAdvisor({ onLogout: _onLogout }: AIAdvisorProps) {
               </div>
 
               <div className="flex items-center gap-3">
-                <button
+                {/* <button
                   onClick={startNewConversation}
                   className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:border-gray-400 transition-all shadow-sm"
                 >
                   <RotateCcw size={16} />
                   New Chat
-                </button>
+                </button> */}
 
                 <div className="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-semibold bg-gradient-to-r from-emerald-100 to-emerald-50 text-emerald-800 rounded-full border border-emerald-200/70 shadow-sm">
                   <Zap size={12} className="text-emerald-600" />
@@ -441,8 +472,8 @@ export default function AIAdvisor({ onLogout: _onLogout }: AIAdvisorProps) {
                       }`}
                     >
                      {msg.text || (
-  <Loader2 size={18} className="animate-spin text-emerald-600" />
-)}
+                      <Loader2 size={18} className="animate-spin text-emerald-600" />
+                    )}
                     </div>
 
                     {msg.role === "user" && (
@@ -453,19 +484,6 @@ export default function AIAdvisor({ onLogout: _onLogout }: AIAdvisorProps) {
                   </div>
                 </div>
               ))}
-{/* 
-              {isSending && (
-                <div className="flex justify-start">
-                  <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-2xl bg-gradient-to-br from-emerald-100 to-teal-100 flex items-center justify-center shrink-0">
-                      <Bot size={18} className="text-emerald-700" />
-                    </div>
-                    <div className="bg-white rounded-2xl px-5 py-3.5 border border-gray-200/80 shadow-sm">
-                      <Loader2 size={18} className="animate-spin text-emerald-600" />
-                    </div>
-                  </div>
-                </div>
-              )} */}
 
               <div ref={messagesEndRef} />
             </div>
@@ -493,14 +511,6 @@ export default function AIAdvisor({ onLogout: _onLogout }: AIAdvisorProps) {
                 onChange={onFilePicked}
                 className="hidden"
               />
-              {/* <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-gray-300 text-sm hover:bg-gray-50 hover:border-gray-400 transition-all shadow-sm"
-              >
-                <Paperclip size={18} className="text-gray-600" />
-                Attach PDF
-              </button> */}
 
               {attachedFile && (
                 <div className="flex items-center gap-2.5 px-4 py-2 bg-emerald-50/80 border border-emerald-200/70 rounded-xl text-sm text-emerald-800 shadow-sm">
