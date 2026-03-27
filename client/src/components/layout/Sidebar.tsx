@@ -21,6 +21,7 @@ export default function Sidebar({ setPage, page, onLogout }: SidebarProps) {
   const canAccessMarketplace = role === "ADMIN" || role === "TRADER";
   const canAccessAllianceMarketplace = role === "ADMIN" || role === "TRADER";
   const canAccessAllianceMembers = role === "ADMIN" || role === "TRADER";
+  const canAccessReports = role === "AUDITOR" || role === "ADMIN";
   
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -83,11 +84,17 @@ export default function Sidebar({ setPage, page, onLogout }: SidebarProps) {
             onClick={() => setPage("holdings")}
           />
 
-          <NavItem
+          {/* <NavItem
             label="Reports"
             active={page === "reports"}
             onClick={() => setPage("reports")}
-          />
+          /> */}
+
+          {canAccessReports && (
+          <NavItem label="Reports" active={page === "reports"} 
+          onClick={() => setPage("reports")} />
+          )}
+
 
           <NavItem
             label="News"
