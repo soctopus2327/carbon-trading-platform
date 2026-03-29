@@ -279,7 +279,7 @@ exports.chat = async (req, res) => {
   const companyId = req.user?.company ? String(req.user.company) : null;
 
   if (!question?.trim()) {
-    if (pdfPath) await fs.unlink(pdfPath).catch(() => {});
+    if (pdfPath) await fs.unlink(pdfPath).catch(() => { });
     return res.status(400).json({ success: false, message: "Question required" });
   }
 
@@ -338,7 +338,7 @@ exports.chat = async (req, res) => {
     console.error("chat error:", err);
     res.status(500).json({ success: false, message: err.message || "Advisor failed" });
   } finally {
-    if (pdfPath) await fs.unlink(pdfPath).catch(() => {});
+    if (pdfPath) await fs.unlink(pdfPath).catch(() => { });
   }
 };
 
@@ -351,7 +351,7 @@ exports.chatStream = async (req, res) => {
   const companyId = req.user?.company ? String(req.user.company) : null;
 
   if (!question?.trim()) {
-    if (pdfPath) await fs.unlink(pdfPath).catch(() => {});
+    if (pdfPath) await fs.unlink(pdfPath).catch(() => { });
     return res.status(400).json({ success: false, message: "Question required" });
   }
 
@@ -435,7 +435,7 @@ exports.chatStream = async (req, res) => {
     }
     res.end();
   } finally {
-    if (pdfPath) await fs.unlink(pdfPath).catch(() => {});
+    if (pdfPath) await fs.unlink(pdfPath).catch(() => { });
   }
 };
 
@@ -496,8 +496,8 @@ async function buildInsightsForScope(companyId) {
   const movedVolume = totalVolumeAgg[0]?.totalAmount || 0;
   const averagePrice = avgPriceAgg[0]?.avgPrice || 0;
 
-  const successRate = totalTxCount > 0 
-    ? Math.round((successfulTxCount / totalTxCount) * 100) 
+  const successRate = totalTxCount > 0
+    ? Math.round((successfulTxCount / totalTxCount) * 100)
     : 0;
 
   return {
@@ -539,10 +539,10 @@ exports.getInsights = async (req, res) => {
     return res.json({
       cards: insights.cards,
       steps: insights.steps,
-      scope: userCompanyId 
+      scope: userCompanyId
         ? (await Company.findById(userCompanyId).select("name").lean())?.name || "Company"
         : "Platform",
-      model,                   
+      model,
       timestamp: new Date().toISOString(),
     });
 

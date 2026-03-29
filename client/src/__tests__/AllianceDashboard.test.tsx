@@ -67,26 +67,23 @@ describe("AllianceDashboard", () => {
     localStorage.clear();
   });
 
-  // --------------------------------------------------
   // Title
-  // --------------------------------------------------
+
   it("renders title 'Alliance Dashboard'", async () => {
     render(<AllianceDashboard />);
     expect(await screen.findByText("Alliance Dashboard")).toBeInTheDocument();
   });
 
-  // --------------------------------------------------
   // Total alliances count
-  // --------------------------------------------------
+
   it("displays correct total alliances count", async () => {
     render(<AllianceDashboard />);
     expect(await screen.findByText("Total Alliances Joined")).toBeInTheDocument();
     expect(await screen.findByText("2")).toBeInTheDocument();
   });
 
-  // --------------------------------------------------
   // Alliance cards
-  // --------------------------------------------------
+
   it("renders alliance cards with correct header info", async () => {
     render(<AllianceDashboard />);
     expect(await screen.findByText("Green Alliance")).toBeInTheDocument();
@@ -97,9 +94,8 @@ describe("AllianceDashboard", () => {
     expect(await screen.findByText("Members: 1")).toBeInTheDocument();
   });
 
-  // --------------------------------------------------
   // Member details
-  // --------------------------------------------------
+
   it("shows member details including companyType and carbonCredits", async () => {
     render(<AllianceDashboard />);
     expect(await screen.findByText("SolarTech Ltd")).toBeInTheDocument();
@@ -111,9 +107,8 @@ describe("AllianceDashboard", () => {
     expect(await screen.findByText("Energy")).toBeInTheDocument();
   });
 
-  // --------------------------------------------------
   // Trades + credits
-  // --------------------------------------------------
+
   it("displays total trades and total credits per alliance", async () => {
     render(<AllianceDashboard />);
     expect(await screen.findByText("Total Trades: 45")).toBeInTheDocument();
@@ -122,9 +117,9 @@ describe("AllianceDashboard", () => {
     expect(await screen.findByText("Total Credits: 680")).toBeInTheDocument();
   });
 
-  // --------------------------------------------------
+
   // Empty state
-  // --------------------------------------------------
+
   it("shows empty state when no alliances exist", async () => {
     mockedAxios.get.mockImplementation((url: string) => {
       if (url.includes("/alliance/dashboard")) return Promise.resolve({ data: [] });
@@ -138,9 +133,8 @@ describe("AllianceDashboard", () => {
     expect(screen.queryByText("Eco Partners")).not.toBeInTheDocument();
   });
 
-  // --------------------------------------------------
   // Alliance with no members
-  // --------------------------------------------------
+
   it("handles alliance with no members", async () => {
     const dashboardWithEmpty = [
       {
@@ -169,11 +163,10 @@ describe("AllianceDashboard", () => {
     expect(await screen.findByText("Total Credits: 0")).toBeInTheDocument();
   });
 
-  // --------------------------------------------------
   // API failure
-  // --------------------------------------------------
+
   it("handles API failure gracefully", async () => {
-    const consoleSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+    const consoleSpy = jest.spyOn(console, "error").mockImplementation(() => { });
 
     mockedAxios.get.mockRejectedValueOnce(new Error("Network error"));
 
@@ -186,11 +179,10 @@ describe("AllianceDashboard", () => {
     consoleSpy.mockRestore();
   });
 
-  // --------------------------------------------------
   // Missing token  
-  // --------------------------------------------------
+
   it("does not crash when token is missing", async () => {
-    const consoleSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+    const consoleSpy = jest.spyOn(console, "error").mockImplementation(() => { });
 
     localStorage.removeItem("token");
     mockedAxios.get.mockRejectedValue(new Error("No token"));

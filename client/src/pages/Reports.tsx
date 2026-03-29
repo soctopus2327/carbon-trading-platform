@@ -9,7 +9,6 @@ import {
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
-/* ─── Scrollbar + viewport lock styles ───────────────────────────────────── */
 const SCROLL_STYLE = `
   .audit-scroll::-webkit-scrollbar { width: 4px; }
   .audit-scroll::-webkit-scrollbar-track { background: transparent; }
@@ -21,7 +20,6 @@ const SCROLL_STYLE = `
 
 type ReportsProps = { onLogout?: () => void };
 
-/* ─── Severity badge ──────────────────────────────────────────────────────── */
 const SeverityBadge = ({ level }: { level?: string }) => {
   const map: Record<string, string> = {
     HIGH: "bg-red-50 text-red-600 ring-1 ring-red-200",
@@ -36,7 +34,6 @@ const SeverityBadge = ({ level }: { level?: string }) => {
   );
 };
 
-/* ─── Priority chip ───────────────────────────────────────────────────────── */
 const PriorityChip = ({ p }: { p?: string }) => {
   const map: Record<string, string> = {
     HIGH: "bg-red-50 text-red-600",
@@ -50,7 +47,6 @@ const PriorityChip = ({ p }: { p?: string }) => {
   );
 };
 
-/* ─── Risk colour ─────────────────────────────────────────────────────────── */
 const riskColor = (r?: string) => {
   const m: Record<string, string> = {
     HIGH: "text-red-500",
@@ -60,9 +56,7 @@ const riskColor = (r?: string) => {
   return m[(r ?? "").toUpperCase()] ?? "text-gray-700";
 };
 
-/* ════════════════════════════════════════════════════════════════════════════
-   MAIN COMPONENT
-════════════════════════════════════════════════════════════════════════════ */
+
 export default function Reports({ onLogout: _onLogout }: ReportsProps) {
   void _onLogout;
 
@@ -246,23 +240,17 @@ export default function Reports({ onLogout: _onLogout }: ReportsProps) {
     doc.save(`Audit_Report_${latestAudit.reportPeriod || "Unspecified"}_${new Date().toISOString().slice(0, 10)}.pdf`);
   };
 
-  /* ════════════════════ RENDER ════════════════════ */
   return (
     <PageLayout title="Reports" description="View compliance and audit reports">
       <style>{SCROLL_STYLE}</style>
 
-      {/*
-        wrapRef: useLayoutEffect above walks up the DOM from here,
-        setting every ancestor div to overflow:hidden + height:100%
-        so nothing outside our two inner panels can scroll.
-      */}
+
       <div ref={wrapRef} className="flex flex-col h-full overflow-hidden">
         <div className="grid grid-cols-1 xl:grid-cols-[340px_1fr] gap-5 flex-1 min-h-0 overflow-hidden">
 
-          {/* ══════════════ LEFT PANEL ══════════════ */}
           <div className="flex flex-col gap-4 min-h-0 overflow-hidden">
 
-            {/* Generate card — fixed height, never scrolls */}
+            {/* Generate card  */}
             <div className="bg-white border border-gray-100 rounded-2xl shadow-sm p-5 shrink-0">
               <p className="text-[11px] uppercase tracking-widest text-emerald-500 font-semibold mb-1">New Audit</p>
               <h2 className="text-lg font-bold text-gray-900 mb-4">Generate Report</h2>
@@ -322,7 +310,7 @@ export default function Reports({ onLogout: _onLogout }: ReportsProps) {
               </div>
             </div>
 
-            {/* History card — fills remaining space, ONLY THIS SCROLLS */}
+            {/* History card  */}
             <div className="flex flex-col bg-white border border-gray-100 rounded-2xl shadow-sm p-5 min-h-0 flex-1 overflow-hidden">
               <p className="text-[11px] uppercase tracking-widest text-gray-400 font-semibold mb-3">Audit History</p>
 
@@ -343,11 +331,10 @@ export default function Reports({ onLogout: _onLogout }: ReportsProps) {
                         <button
                           key={audit._id}
                           onClick={() => void onPickAudit(audit._id)}
-                          className={`w-full text-left px-4 py-3.5 rounded-xl border transition-all ${
-                            active
+                          className={`w-full text-left px-4 py-3.5 rounded-xl border transition-all ${active
                               ? "border-emerald-400 bg-emerald-50 shadow-sm"
                               : "border-gray-100 hover:border-gray-200 hover:bg-gray-50"
-                          }`}
+                            }`}
                         >
                           <div className="flex justify-between items-start gap-2">
                             <div className="min-w-0">
@@ -363,11 +350,10 @@ export default function Reports({ onLogout: _onLogout }: ReportsProps) {
                               </p>
                             </div>
                             <span
-                              className={`shrink-0 text-[10px] px-2 py-0.5 rounded-full font-semibold mt-0.5 ${
-                                audit.status === "GENERATED"
+                              className={`shrink-0 text-[10px] px-2 py-0.5 rounded-full font-semibold mt-0.5 ${audit.status === "GENERATED"
                                   ? "bg-green-100 text-green-700"
                                   : "bg-amber-100 text-amber-700"
-                              }`}
+                                }`}
                             >
                               {audit.status}
                             </span>
@@ -383,10 +369,9 @@ export default function Reports({ onLogout: _onLogout }: ReportsProps) {
           </div>
           {/* end left panel */}
 
-          {/* ══════════════ RIGHT PANEL ══════════════ */}
           <div className="flex flex-col bg-white border border-gray-100 rounded-2xl shadow-sm min-h-0 overflow-hidden">
 
-            {/* Header — fixed, never scrolls */}
+            {/* Header*/}
             <div className="shrink-0 px-7 py-5 border-b border-gray-100 flex items-center justify-between">
               <div>
                 <p className="text-[11px] uppercase tracking-widest text-emerald-500 font-semibold">Report</p>
@@ -508,18 +493,13 @@ export default function Reports({ onLogout: _onLogout }: ReportsProps) {
                       <p className="text-sm text-gray-400 italic">No recommendations available.</p>
                     )}
                   </section>
-
                 </div>
               )}
             </div>
-
           </div>
-          {/* end right panel */}
-
         </div>
-        {/* end grid */}
       </div>
-      {/* end ref wrapper */}
+
     </PageLayout>
   );
 }

@@ -286,9 +286,9 @@ export default function AIAdvisor({ onLogout: _onLogout }: AIAdvisorProps) {
   return (
     <PageLayout title="AI Advisor" description="Portfolio guidance & action planning" compact>
       <div className="grid grid-cols-1 lg:grid-cols-[minmax(280px,340px)_1fr] gap-6 h-[calc(100vh-200px)] min-h-0 bg-gray-50/40 overflow-hidden">
-        {/* Left column: History + Insights stacked vertically */}
+        {/* Left column: History + Insights */}
         <div className="flex flex-col gap-6 overflow-hidden">
-          {/* 1. Conversation History – scrollable */}
+          {/* 1. Conversation History  */}
           <div className="bg-white/80 backdrop-blur-sm border border-gray-200/80 rounded-2xl shadow-sm flex flex-col overflow-hidden flex-1 min-h-0">
             <div className="p-5 border-b border-gray-200/70 flex items-center justify-between bg-gradient-to-r from-emerald-50/80 to-white shrink-0">
               <h3 className="font-semibold text-gray-900 flex items-center gap-2">
@@ -316,11 +316,10 @@ export default function AIAdvisor({ onLogout: _onLogout }: AIAdvisorProps) {
                   <button
                     key={conv._id}
                     onClick={() => loadConversation(conv._id)}
-                    className={`w-full text-left px-4 py-3.5 rounded-xl flex items-center gap-3 transition-all duration-200 ${
-                      currentConversationId === conv._id
+                    className={`w-full text-left px-4 py-3.5 rounded-xl flex items-center gap-3 transition-all duration-200 ${currentConversationId === conv._id
                         ? "bg-emerald-50/80 border-l-4 border-emerald-500 shadow-sm"
                         : "hover:bg-gray-50/80"
-                    }`}
+                      }`}
                   >
                     <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-100 to-cyan-100 flex items-center justify-center shrink-0">
                       <MessageSquare size={16} className="text-emerald-700" />
@@ -381,7 +380,6 @@ export default function AIAdvisor({ onLogout: _onLogout }: AIAdvisorProps) {
                 </div>
               )}
 
-              {/* Next Steps */}
               <div className="rounded-2xl border bg-gray-50/80 border-gray-200/70 p-5 shadow-sm">
                 <p className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
                   <ArrowUp size={17} className="text-emerald-600" />
@@ -433,14 +431,6 @@ export default function AIAdvisor({ onLogout: _onLogout }: AIAdvisorProps) {
               </div>
 
               <div className="flex items-center gap-3">
-                {/* <button
-                  onClick={startNewConversation}
-                  className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:border-gray-400 transition-all shadow-sm"
-                >
-                  <RotateCcw size={16} />
-                  New Chat
-                </button> */}
-
                 <div className="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-semibold bg-gradient-to-r from-emerald-100 to-emerald-50 text-emerald-800 rounded-full border border-emerald-200/70 shadow-sm">
                   <Zap size={12} className="text-emerald-600" />
                   Live
@@ -465,15 +455,14 @@ export default function AIAdvisor({ onLogout: _onLogout }: AIAdvisorProps) {
                     )}
 
                     <div
-                      className={`rounded-2xl px-5 py-3.5 text-[15px] leading-relaxed shadow-sm transition-all duration-200 ${
-                        msg.role === "user"
+                      className={`rounded-2xl px-5 py-3.5 text-[15px] leading-relaxed shadow-sm transition-all duration-200 ${msg.role === "user"
                           ? "bg-gradient-to-r from-emerald-600 to-emerald-700 text-white"
                           : "bg-white text-gray-800 border border-gray-200/80"
-                      }`}
+                        }`}
                     >
-                     {msg.text || (
-                      <Loader2 size={18} className="animate-spin text-emerald-600" />
-                    )}
+                      {msg.text || (
+                        <Loader2 size={18} className="animate-spin text-emerald-600" />
+                      )}
                     </div>
 
                     {msg.role === "user" && (

@@ -58,7 +58,6 @@ const advisorConversationSchema = new mongoose.Schema(
   }
 );
 
-// ✅ FIXED: Removed `next` completely
 advisorConversationSchema.pre('save', function () {
   this.lastActive = new Date();
 

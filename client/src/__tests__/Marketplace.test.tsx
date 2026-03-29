@@ -9,7 +9,7 @@ const mockedAxios = axios as jest.Mocked<typeof axios>;
 
 
 // ────────────────────────────────────────────────
-// Tests Covered (same as before)
+// Tests Covered
 // ────────────────────────────────────────────────
 // shows loading state while trades request is pending
 // renders listings and summary metrics after fetch
@@ -33,8 +33,8 @@ const mockedAxios = axios as jest.Mocked<typeof axios>;
 
 
 beforeAll(() => {
-  jest.spyOn(console, 'error').mockImplementation(() => {});
-  jest.spyOn(console, 'warn').mockImplementation(() => {});
+  jest.spyOn(console, 'error').mockImplementation(() => { });
+  jest.spyOn(console, 'warn').mockImplementation(() => { });
 });
 
 afterAll(() => {
@@ -98,7 +98,7 @@ describe('Marketplace page', () => {
     localStorage.clear();
     setupUserSession(150, 'my-company-id');
 
-    alertSpy = jest.spyOn(window, 'alert').mockImplementation(() => {});
+    alertSpy = jest.spyOn(window, 'alert').mockImplementation(() => { });
 
     mockedAxios.get.mockResolvedValue({ data: mockTrades });
     mockedAxios.post.mockResolvedValue({ data: { coinsEarned: 30 } });
@@ -111,7 +111,7 @@ describe('Marketplace page', () => {
   });
 
   it('shows loading state while trades request is pending', () => {
-    mockedAxios.get.mockImplementationOnce(() => new Promise(() => {}));
+    mockedAxios.get.mockImplementationOnce(() => new Promise(() => { }));
     render(<Marketplace />);
     expect(screen.getByText('Loading marketplace...')).toBeInTheDocument();
   });
@@ -148,10 +148,10 @@ describe('Marketplace page', () => {
     await switchToSellTab();
 
     const priceInput = screen.getByPlaceholderText('Enter price');
-    const qtyInput   = screen.getByPlaceholderText('Enter quantity');
+    const qtyInput = screen.getByPlaceholderText('Enter quantity');
 
     fireEvent.change(priceInput, { target: { value: '120' } });
-    fireEvent.change(qtyInput,   { target: { value: '15' } });
+    fireEvent.change(qtyInput, { target: { value: '15' } });
 
     fireEvent.click(screen.getByRole('button', { name: /Create Trade Listing/i }));
 
@@ -182,7 +182,7 @@ describe('Marketplace page', () => {
     });
 
     fireEvent.change(screen.getByDisplayValue('85'), { target: { value: '95' } });
-    fireEvent.change(screen.getByDisplayValue('8'),  { target: { value: '5' } });
+    fireEvent.change(screen.getByDisplayValue('8'), { target: { value: '5' } });
 
     fireEvent.click(screen.getByRole('button', { name: /Save Changes/i }));
 

@@ -60,7 +60,7 @@ const payLaterPaymentSchema = new mongoose.Schema({
     required: true
   },
 
-  // Payment History (simple)
+  // Payment History
   paymentHistory: [
     {
       amount: Number,

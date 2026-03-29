@@ -26,7 +26,7 @@ export default function CompanyRegister({ onSuccess }: CompanyRegisterProps) {
     password: "",
     confirmPassword: "",
     companyType: "INDIVIDUAL",
-    initialCredits: 0,           // ← NEW
+    initialCredits: 0,          
   });
 
   const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {

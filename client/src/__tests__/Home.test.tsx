@@ -3,9 +3,6 @@ import React from "react";
 import { render, screen, waitFor, fireEvent, act } from "@testing-library/react";
 import Home from "../pages/Home"; // adjust import path if needed
 
-// ────────────────────────────────────────────────
-// Mocks
-// ────────────────────────────────────────────────
 
 const mockLocalStorage = {
   getItem: jest.fn(),
@@ -20,9 +17,7 @@ Object.defineProperty(window, "localStorage", { value: mockLocalStorage });
 
 const mockSetPage = jest.fn();
 
-// ────────────────────────────────────────────────
 // Helpers
-// ────────────────────────────────────────────────
 
 const mockLoggedIn = () => {
   mockLocalStorage.getItem.mockImplementation((key: string) => {
@@ -33,9 +28,7 @@ const mockLoggedIn = () => {
   });
 };
 
-// ────────────────────────────────────────────────
-// Setup / Teardown
-// ────────────────────────────────────────────────
+// Setup 
 
 describe("Home Component", () => {
   beforeEach(() => {
@@ -53,9 +46,7 @@ describe("Home Component", () => {
     jest.resetAllMocks();
   });
 
-  // ────────────────────────────────────────────────
   // Tests
-  // ────────────────────────────────────────────────
 
   it("renders hero section with title, description and CTA", () => {
     mockLocalStorage.getItem.mockReturnValue(null);

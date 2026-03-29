@@ -69,10 +69,9 @@ describe("AllianceMarketplace", () => {
   beforeEach(() => {
     jest.clearAllMocks();
 
-    // Properly mock console.error
     consoleErrorSpy = jest
       .spyOn(console, "error")
-      .mockImplementation(() => {});
+      .mockImplementation(() => { });
 
     localStorage.setItem("token", mockToken);
     localStorage.setItem("user", JSON.stringify(mockUser));
@@ -100,7 +99,7 @@ describe("AllianceMarketplace", () => {
     localStorage.clear();
   });
 
-  // 1. Render title
+  // Render title
   it("renders page title", async () => {
     render(<AllianceMarketplace />);
     expect(await screen.findByTestId("layout-title")).toHaveTextContent(
@@ -108,13 +107,13 @@ describe("AllianceMarketplace", () => {
     );
   });
 
-  // 2. API calls
+  // API calls
   it("fetches all required data on mount", async () => {
     render(<AllianceMarketplace />);
     await waitFor(() => expect(mockedAxios.get).toHaveBeenCalledTimes(3));
   });
 
-  // 3. Credits + default selection
+  // Credits + default selection
   it("shows available credits and selects first alliance by default", async () => {
     render(<AllianceMarketplace />);
     expect(await screen.findByText(/Available Credits:/i)).toBeInTheDocument();
@@ -122,7 +121,7 @@ describe("AllianceMarketplace", () => {
     expect(screen.getByRole("combobox")).toHaveValue("all1");
   });
 
-  // 4. Sell success
+  //  Sell success
   it("successfully sells credits and clears form inputs", async () => {
     render(<AllianceMarketplace />);
     await screen.findByText("350");
@@ -148,7 +147,7 @@ describe("AllianceMarketplace", () => {
     });
   });
 
-  // 5. Validation (NO UI error expected → check API not called)
+  // Validation (NO UI error expected → check API not called)
   it("prevents selling more credits than available", async () => {
     render(<AllianceMarketplace />);
     await screen.findByText("350");
@@ -166,7 +165,7 @@ describe("AllianceMarketplace", () => {
     });
   });
 
-  // 6. Trade cards
+  // Trade cards
   it("renders trade cards correctly and shows Edit/Delete only for own trades", async () => {
     render(<AllianceMarketplace />);
     await screen.findByText("SolarTech Ltd");
@@ -183,14 +182,13 @@ describe("AllianceMarketplace", () => {
 
     expect(withinAlliance.getByText("SolarTech Ltd")).toBeInTheDocument();
 
-    // robust price check
     expect(screen.getAllByText(/₹\s*15/).length).toBeGreaterThan(0);
 
     expect(withinAlliance.getByRole("button", { name: "Edit" })).toBeInTheDocument();
     expect(withinAlliance.getByRole("button", { name: "Delete" })).toBeInTheDocument();
   });
 
-  // 7. No trades
+  //  No trades
   it("shows 'No trades listed' message when alliance has no trades", async () => {
     mockedAxios.get.mockImplementation((url: string) => {
       if (url.includes("/marketplace")) {
@@ -216,7 +214,7 @@ describe("AllianceMarketplace", () => {
     expect(await screen.findByText("No trades listed")).toBeInTheDocument();
   });
 
-  // 8. Buy modal
+  // Buy modal
   it("buy modal shows correct total price", async () => {
     render(<AllianceMarketplace />);
     await screen.findByText("SolarTech Ltd");
@@ -233,7 +231,7 @@ describe("AllianceMarketplace", () => {
     });
   });
 
-  // 9. API failure
+  // API failure
   it("handles failed API calls gracefully (shows page anyway)", async () => {
     mockedAxios.get.mockRejectedValue(new Error("Network error"));
 

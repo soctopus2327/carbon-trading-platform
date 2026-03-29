@@ -12,32 +12,32 @@ const Home: React.FC<HomeProps> = ({ setPage }) => {
     const leaderboardRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
-    const token = localStorage.getItem("token");
-    const user = localStorage.getItem("user");
+        const token = localStorage.getItem("token");
+        const user = localStorage.getItem("user");
 
-    if (token && user) {
-        setIsLoggedIn(true);
-    }
+        if (token && user) {
+            setIsLoggedIn(true);
+        }
 
-    fetch("http://localhost:5000/leaderboard")
-        .then((res) => {
-            if (!res.ok) throw new Error(`HTTP ${res.status}`);
-            return res.json();
-        })
-        .then((data) => {
-    act(() => {
-        setLeaderboard(data);
-    });
-})
-        .catch((err) => {
-            console.error("Leaderboard fetch error:", err);
-        });
-}, []);
-  const goToLeaderboard = () => {
-        setPage("home"); // Make sure we are on home page
+        fetch("http://localhost:5000/leaderboard")
+            .then((res) => {
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                return res.json();
+            })
+            .then((data) => {
+                act(() => {
+                    setLeaderboard(data);
+                });
+            })
+            .catch((err) => {
+                console.error("Leaderboard fetch error:", err);
+            });
+    }, []);
+    const goToLeaderboard = () => {
+        setPage("home");
         setTimeout(() => {
             leaderboardRef.current?.scrollIntoView({ behavior: "smooth" });
-        }, 100); // slight delay to ensure page renders
+        }, 100);
     };
 
     const logout = () => {
@@ -136,7 +136,7 @@ const Home: React.FC<HomeProps> = ({ setPage }) => {
                         >
                             Start Trading
                         </button>
-                       
+
                     </div>
                 </div>
             </section>
@@ -247,21 +247,21 @@ const Home: React.FC<HomeProps> = ({ setPage }) => {
 
             {/* FOOTER */}
             <footer className="bg-gray-900 text-gray-400 mt-auto">
-    <div className="max-w-7xl mx-auto px-8 py-12 grid md:grid-cols-2 gap-10">
-        <div>
-            <h3 className="text-white text-xl font-semibold mb-4">DESIS 2025</h3>
-            <p className="text-sm">
-                Transparent carbon credit marketplace supporting global climate projects.
-            </p>
-        </div>
-    <div className="pl-6 md:pl-0 md:text-right">
-            <h4 className="text-white font-semibold mb-4">Contact</h4>
-            <p className="text-sm">support@desis2025.com</p>
-            <p className="text-sm">+44 2045 771951</p>
-        </div>
-    </div>
-    <div className="text-center text-sm pb-6">© 2026 DESIS Carbon Trading Platform</div>
-</footer>
+                <div className="max-w-7xl mx-auto px-8 py-12 grid md:grid-cols-2 gap-10">
+                    <div>
+                        <h3 className="text-white text-xl font-semibold mb-4">DESIS 2025</h3>
+                        <p className="text-sm">
+                            Transparent carbon credit marketplace supporting global climate projects.
+                        </p>
+                    </div>
+                    <div className="pl-6 md:pl-0 md:text-right">
+                        <h4 className="text-white font-semibold mb-4">Contact</h4>
+                        <p className="text-sm">support@desis2025.com</p>
+                        <p className="text-sm">+44 2045 771951</p>
+                    </div>
+                </div>
+                <div className="text-center text-sm pb-6">© 2026 DESIS Carbon Trading Platform</div>
+            </footer>
         </div>
     );
 };

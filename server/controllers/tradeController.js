@@ -58,7 +58,7 @@ exports.createTrade = async (req, res) => {
 };
 
 
-// GET ALL TRADES (unchanged)
+// GET ALL TRADES 
 exports.getAllTrades = async (req, res) => {
   try {
     const trades = await TradeListing.find({
@@ -105,7 +105,6 @@ exports.updateTrade = async (req, res) => {
       }
       await Company.findByIdAndUpdate(trade.sellerCompany, { $inc: { carbonCredits: -difference } });
     } else if (difference < 0) {
-      // Free up credits
       await Company.findByIdAndUpdate(trade.sellerCompany, { $inc: { carbonCredits: Math.abs(difference) } });
     }
 
@@ -131,7 +130,6 @@ exports.deleteTrade = async (req, res) => {
     if (trade.sellerCompany.toString() !== req.user.company.toString())
       return res.status(403).json({ message: "You can only delete your own trades" });
 
-    // Return reserved carbon credits (this was the second bug)
     await Company.findByIdAndUpdate(
       trade.sellerCompany,
       { $inc: { carbonCredits: trade.remainingQuantity || 0 } }

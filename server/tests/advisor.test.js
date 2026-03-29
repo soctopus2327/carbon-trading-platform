@@ -2,7 +2,6 @@
 
 const mongoose = require("mongoose");
 
-// ─── Mock all external dependencies before requiring the controller ───────────
 jest.mock("fs/promises", () => ({
   unlink: jest.fn().mockResolvedValue(undefined),
 }));
@@ -98,7 +97,7 @@ function mockConversationInstance(overrides = {}) {
 }
 
 function silenceConsoleError() {
-  return jest.spyOn(console, "error").mockImplementation(() => {});
+  return jest.spyOn(console, "error").mockImplementation(() => { });
 }
 
 function setupDefaultMocks() {
@@ -174,9 +173,7 @@ afterEach(() => {
   jest.restoreAllMocks();
 });
 
-// =============================================================================
-// 1. listConversations
-// =============================================================================
+// listConversations
 
 describe("listConversations", () => {
   const mockConvDocs = [
@@ -276,9 +273,7 @@ describe("listConversations", () => {
   });
 });
 
-// =============================================================================
-// 2. getConversation
-// =============================================================================
+// getConversation
 
 describe("getConversation", () => {
   function mockFindOne(doc) {
@@ -340,9 +335,8 @@ describe("getConversation", () => {
   });
 });
 
-// =============================================================================
-// 3. updateConversation
-// =============================================================================
+// updateConversation
+
 
 describe("updateConversation", () => {
   function mockFindOneAndUpdate(returnValue) {
@@ -448,9 +442,7 @@ describe("updateConversation", () => {
   });
 });
 
-// =============================================================================
-// 4. deleteConversation
-// =============================================================================
+// deleteConversation
 
 describe("deleteConversation", () => {
   it("returns HTTP 400 for an invalid (non-ObjectId) conversation ID", async () => {
@@ -491,9 +483,8 @@ describe("deleteConversation", () => {
   });
 });
 
-// =============================================================================
-// 5. chat (non-streaming)
-// =============================================================================
+
+// chat
 
 describe("chat", () => {
   function setupNewConversation() {
@@ -728,9 +719,7 @@ describe("chat", () => {
   });
 });
 
-// =============================================================================
-// 6. chatStream 
-// =============================================================================
+// chatStream 
 
 describe("chatStream", () => {
   function setupNewConversation() {
@@ -942,9 +931,7 @@ describe("chatStream", () => {
   });
 });
 
-// =============================================================================
-// 7. getInsights 
-// =============================================================================
+// getInsights 
 
 describe("getInsights", () => {
   it("response contains exactly 3 insight cards", async () => {
@@ -1055,9 +1042,7 @@ describe("getInsights", () => {
   });
 });
 
-// =============================================================================
-// 8. Market news enrichment
-// =============================================================================
+// Market news enrichment
 
 describe("market news enrichment", () => {
   function setupConv() {

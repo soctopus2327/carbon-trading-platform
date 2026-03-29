@@ -172,14 +172,12 @@ export default function AllianceMarketplace() {
     }
   };
 
-  // ==================== INITIAL LOAD ====================
   useEffect(() => {
     fetchAlliances();
     fetchMarketplace();
     fetchCompanyCredits();
   }, []);
 
-  // ==================== RENDER ====================
   return (
     <PageLayout title="Alliance Marketplace">
       <div className="p-10 bg-gradient-to-br from-indigo-50 via-white to-indigo-100 min-h-screen">

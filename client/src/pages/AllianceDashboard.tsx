@@ -34,28 +34,28 @@ interface AllianceStats {
 
 export default function AllianceDashboard() {
 
-  const [alliances,setAlliances] = useState<AllianceStats[]>([])
+  const [alliances, setAlliances] = useState<AllianceStats[]>([])
 
-  useEffect(()=>{
+  useEffect(() => {
 
-    const fetchDashboard = async()=>{
+    const fetchDashboard = async () => {
 
-      try{
+      try {
 
         const token = localStorage.getItem("token")
 
         const dashRes = await axios.get(
           "http://localhost:5000/alliance/dashboard",
-          { headers:{ Authorization:`Bearer ${token}` } }
+          { headers: { Authorization: `Bearer ${token}` } }
         )
 
         const memberRes = await axios.get(
           "http://localhost:5000/alliance/members",
-          { headers:{ Authorization:`Bearer ${token}` } }
+          { headers: { Authorization: `Bearer ${token}` } }
         )
 
-        const dashboardData:AllianceDashboardData[] = dashRes.data
-        const membersData:AllianceMembersData[] = memberRes.data
+        const dashboardData: AllianceDashboardData[] = dashRes.data
+        const membersData: AllianceMembersData[] = memberRes.data
 
         const merged = dashboardData.map(d => {
 
@@ -74,123 +74,122 @@ export default function AllianceDashboard() {
 
         setAlliances(merged)
 
-      }catch(err){
-        console.error("Dashboard load error",err)
+      } catch (err) {
+        console.error("Dashboard load error", err)
       }
 
     }
 
     fetchDashboard()
 
-  },[])
+  }, [])
 
   const totalAlliances = alliances.length
 
-  return(
+  return (
 
-<div className="min-h-screen w-full bg-gradient-to-br from-indigo-50 via-white to-indigo-100 p-10">
+    <div className="min-h-screen w-full bg-gradient-to-br from-indigo-50 via-white to-indigo-100 p-10">
 
-<h1 className="text-4xl font-bold text-indigo-700 mb-10">
-Alliance Dashboard
-</h1>
+      <h1 className="text-4xl font-bold text-indigo-700 mb-10">
+        Alliance Dashboard
+      </h1>
 
-{/* SUMMARY SECTION */}
+      {/* SUMMARY SECTION */}
 
-<div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
 
-<div className="bg-white shadow-lg rounded-xl p-6">
+        <div className="bg-white shadow-lg rounded-xl p-6">
 
-<h2 className="text-lg text-gray-600">
-Total Alliances Joined
-</h2>
+          <h2 className="text-lg text-gray-600">
+            Total Alliances Joined
+          </h2>
 
-<p className="text-4xl font-bold text-indigo-600 mt-2">
-{totalAlliances}
-</p>
+          <p className="text-4xl font-bold text-indigo-600 mt-2">
+            {totalAlliances}
+          </p>
 
-</div>
+        </div>
 
-</div>
+      </div>
 
-{/* ALLIANCE CARDS */}
+      {/* ALLIANCE CARDS */}
 
-<div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 w-full">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 w-full">
 
-{alliances.map(a=>(
+        {alliances.map(a => (
 
-<div
-key={a.allianceId}
-className="bg-white rounded-2xl shadow-xl p-6 space-y-5 hover:shadow-2xl transition"
->
+          <div
+            key={a.allianceId}
+            className="bg-white rounded-2xl shadow-xl p-6 space-y-5 hover:shadow-2xl transition"
+          >
 
-{/* HEADER */}
+            {/* HEADER */}
 
-<div>
+            <div>
 
-<h2 className="text-xl font-bold text-indigo-700">
-{a.allianceName}
-</h2>
+              <h2 className="text-xl font-bold text-indigo-700">
+                {a.allianceName}
+              </h2>
 
-<p className="text-sm text-gray-500">
-Code: {a.allianceCode}
-</p>
+              <p className="text-sm text-gray-500">
+                Code: {a.allianceCode}
+              </p>
 
-</div>
+            </div>
 
-{/* MEMBERS */}
+            {/* MEMBERS */}
 
-<p className="text-sm font-semibold text-gray-700">
-Members: {a.members.length}
-</p>
+            <p className="text-sm font-semibold text-gray-700">
+              Members: {a.members.length}
+            </p>
 
-<div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-3">
 
-{a.members.map(m=>(
+              {a.members.map(m => (
 
-<div
-key={m._id}
-className="bg-indigo-50 p-3 rounded-lg shadow-sm"
->
+                <div
+                  key={m._id}
+                  className="bg-indigo-50 p-3 rounded-lg shadow-sm"
+                >
 
-<p className="font-semibold text-indigo-700">
-{m.name}
-</p>
+                  <p className="font-semibold text-indigo-700">
+                    {m.name}
+                  </p>
 
-{m.companyType && (
-<p className="text-xs text-gray-600">
-{m.companyType}
-</p>
-)}
+                  {m.companyType && (
+                    <p className="text-xs text-gray-600">
+                      {m.companyType}
+                    </p>
+                  )}
 
-{m.carbonCredits !== undefined && (
-<p className="text-xs text-indigo-600">
-Credits: {m.carbonCredits}
-</p>
-)}
+                  {m.carbonCredits !== undefined && (
+                    <p className="text-xs text-indigo-600">
+                      Credits: {m.carbonCredits}
+                    </p>
+                  )}
 
-</div>
+                </div>
 
-))}
+              ))}
 
-</div>
+            </div>
 
-{/* STATS */}
+            {/* STATS */}
 
-<div className="border-t pt-3 text-sm text-gray-600 space-y-1">
+            <div className="border-t pt-3 text-sm text-gray-600 space-y-1">
 
-<p>Total Trades: {a.totalTrades}</p>
-<p>Total Credits: {a.totalCredits}</p>
+              <p>Total Trades: {a.totalTrades}</p>
+              <p>Total Credits: {a.totalCredits}</p>
 
-</div>
+            </div>
 
-</div>
+          </div>
 
-))}
+        ))}
 
-</div>
+      </div>
 
-</div>
+    </div>
 
   )
-
 }

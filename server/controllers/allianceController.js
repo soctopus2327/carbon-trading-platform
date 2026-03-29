@@ -475,6 +475,9 @@ exports.deleteAllianceTrade = async (req, res) => {
 
 };
 
+/* ================= CREATE POLL ================= */
+
+
 exports.createAlliancePoll = async (req, res) => {
 
   try {
@@ -507,6 +510,8 @@ exports.createAlliancePoll = async (req, res) => {
   }
 
 };
+
+/* ================= VOTE IN POLL ================= */
 
 exports.voteAlliancePoll = async (req, res) => {
 
@@ -549,6 +554,9 @@ exports.voteAlliancePoll = async (req, res) => {
   }
 
 };
+
+/* ================= GET POLLS ================= */
+
 
 exports.getAlliancePolls = async (req, res) => {
 

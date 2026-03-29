@@ -542,7 +542,7 @@ export default function Marketplace() {
         )}
       </div>
 
-      {/* Buy Modal (unchanged - will never open for own trades) */}
+      {/* Buy Modal  */}
       {buyingTrade && (
         <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-6">
           <div className="w-full max-w-md bg-white rounded-2xl border border-gray-200 shadow-xl p-6">
@@ -593,7 +593,7 @@ export default function Marketplace() {
               Total: INR{" "}
               {Math.max(
                 buyingTrade.pricePerCredit * Number(buyQuantity || 0) -
-                  (useDiscount ? 1000 : 0),
+                (useDiscount ? 1000 : 0),
                 0,
               )}
             </p>
@@ -658,11 +658,10 @@ function TabButton({
   return (
     <button
       onClick={onClick}
-      className={`px-5 py-2.5 rounded-xl text-sm font-semibold transition ${
-        active
+      className={`px-5 py-2.5 rounded-xl text-sm font-semibold transition ${active
           ? "bg-emerald-600 text-white shadow"
           : "text-gray-700 hover:bg-gray-100"
-      }`}
+        }`}
     >
       {label}
     </button>

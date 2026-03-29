@@ -4,8 +4,8 @@ exports.getLeaderboard = async (req, res) => {
   try {
 
     const leaderboard = await Company.find({ status: "ACTIVE" })
-      .sort({ points: -1 })   // highest points first
-      .limit(10)              // top 10
+      .sort({ points: -1 })   
+      .limit(10)             
       .select("name points carbonCredits");
 
     res.json(leaderboard);

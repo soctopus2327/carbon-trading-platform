@@ -36,20 +36,20 @@ export default function Holdings({ onLogout: _onLogout }: { onLogout?: () => voi
       : null;
 
   const fetchTotalCredits = async () => {
-  try {
-    const token = localStorage.getItem("token");
-    const userData = JSON.parse(localStorage.getItem("user") || "{}");
-    const companyId = userData.company;
+    try {
+      const token = localStorage.getItem("token");
+      const userData = JSON.parse(localStorage.getItem("user") || "{}");
+      const companyId = userData.company;
 
-    const res = await axios.get(`http://localhost:5000/company/${companyId}/credits`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+      const res = await axios.get(`http://localhost:5000/company/${companyId}/credits`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
-    setTotalCredits(res.data.carbonCredits); // save total credits
-  } catch (err) {
-    console.error("Error fetching total credits", err);
-  }
-};
+      setTotalCredits(res.data.carbonCredits); // save total credits
+    } catch (err) {
+      console.error("Error fetching total credits", err);
+    }
+  };
 
   useEffect(() => {
     fetchTransactions();
@@ -248,9 +248,9 @@ export default function Holdings({ onLogout: _onLogout }: { onLogout?: () => voi
                       <td>{tx.sellerCompany.name}</td>
                       <td className="text-center text-green-600 font-semibold">+{tx.credits}</td>
                       <td className="text-center font-semibold">
-  ₹{Math.max(0, tx.totalAmount - (tx.discountApplied || 0)).toFixed(2)}
-  {tx.discountApplied ? ` + 100 coins` : ""}
-</td>
+                        ₹{Math.max(0, tx.totalAmount - (tx.discountApplied || 0)).toFixed(2)}
+                        {tx.discountApplied ? ` + 100 coins` : ""}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
