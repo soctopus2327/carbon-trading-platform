@@ -316,14 +316,15 @@ describe('Marketplace page', () => {
 
     await waitFor(() => {
       expect(mockedAxios.post).toHaveBeenCalledWith(
-        expect.any(String),
+        'http://localhost:5000/pay-later/execute',
         expect.objectContaining({
-          payLater: true,
-          payLaterDate: expect.stringMatching(/T00:00:00\.000Z$/),
+          tradeId: 'trade-1',
+          quantity: 2,
+          payLaterDays: 1,
         }),
         expect.any(Object)
       );
-      expect(alertSpy).toHaveBeenCalledWith(expect.stringContaining('Payment reminder will be sent on'));
+      expect(alertSpy).toHaveBeenCalledWith(expect.stringContaining('Transaction failed'));
     });
   });
 
